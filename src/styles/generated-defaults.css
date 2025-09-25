@@ -1,7 +1,7 @@
 /* GENERATED - applyDefaults.cjs */
 :root {
   --desired-logo-panel-padding: 120;
-  --panel-bg: #d8d9d6;
+  --panel-bg: #fbd5d3;
 --toolbar-bg: #dadbd6;
 --logo-bg: #f8f3ef;
 --panel-bg-about-us: #fdf4a5;
@@ -20,14 +20,14 @@
 --panel-bg-shop-dir-prev-bg: #ff0000;
 --panel-bg-shop-outline-width: 1px;
 --panel-bg-shop-btn-outline: #000000;
-  --card-shadow-offset: 20px;
---card-shadow-blur: 15px;
---card-shadow-opacity: 0.52;
+  --card-shadow-offset: 19px;
+  --card-shadow-blur: 31px;
+  --card-shadow-opacity: 0.52;
   --logo-base-size: 10000px;
 --logo-inner-scale: 0.5;
 --base-logo-base-multiplier: 1.64;
 --base-logo-gap: -451px;
 --base-logo-y-adjust: 53px;
   --page-bg-scale: 1;
-  --page-bg: url('/src/assets/backgrounds/19.png');
+  --page-bg: url('/assets/19-DF3oX5gl.png');
 }
