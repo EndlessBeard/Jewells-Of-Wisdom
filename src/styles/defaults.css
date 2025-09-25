@@ -11,4 +11,4 @@
   --card-shadow-blur: 20px;
   --card-shadow-opacity: 0.08;
 }
-@import './generated-defaults.css'; /* generated defaults (may be empty until you run the tool) */
+/* generated-defaults.css is imported directly from main.jsx so it can be loaded after these base defaults */
