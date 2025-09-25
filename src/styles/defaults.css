@@ -10,5 +10,8 @@
   --card-shadow-offset: 8px;
   --card-shadow-blur: 20px;
   --card-shadow-opacity: 0.08;
+  /* toolbar/menu and shop button text color defaults */
+  --toolbar-dropdown-title-color: #111;
+  --panel-bg-shop-btn-color: #111;
 }
 /* generated-defaults.css is imported directly from main.jsx so it can be loaded after these base defaults */

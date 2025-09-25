@@ -21,6 +21,8 @@
 .toolbar-title {
   font-size: 1.25rem;
   font-weight: bold;
+  /* ensure toolbar title is readable regardless of global page text color */
+  color: var(--toolbar-title-color, #111);
 }
 .toolbar-menu {
   display: flex;
@@ -62,6 +64,8 @@
   padding: 0.25rem 0.5rem;
   border-bottom: 1px solid rgba(0,0,0,0.06);
   margin-bottom: 0.5rem;
+  /* Menu section titles should be dark on light backgrounds across environments */
+  color: var(--toolbar-dropdown-title-color, #111);
 }
 
 /* Collapsible backgrounds section */

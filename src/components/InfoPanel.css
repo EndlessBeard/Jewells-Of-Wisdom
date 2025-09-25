@@ -6,6 +6,8 @@
   background: linear-gradient(180deg,#fff,#f7f7f7);
   cursor: pointer;
   font-weight: 700;
+  /* text color for shop category buttons - controlled via --panel-bg-shop-btn-color */
+  color: var(--panel-bg-shop-btn-color, #111);
 }
 .info-panel {
   max-width: 1280px;
@@ -219,11 +221,20 @@
 /* give each category button an outline that can be controlled globally */
 .shop-categories button.cat-btn {
   border: var(--panel-bg-shop-outline-width, 1px) solid var(--panel-bg-shop-btn-outline, rgba(0,0,0,0.06));
+  /* reinforce text color here as well for specificity */
+  color: var(--panel-bg-shop-btn-color, #111);
 }
 
 /* Carousel directional button colors */
 .carousel-btn.left { color: var(--panel-bg-shop-dir-prev, #111); }
 .carousel-btn.right { color: var(--panel-bg-shop-dir-next, #111); }
+
+/* shop item link/button inside carousel */
+.shop-link {
+  color: var(--panel-bg-shop-btn-color, #111);
+  text-decoration: none;
+  font-weight: 700;
+}
 
 /* Background colors for carousel directional buttons (controlled via toolbar) */
 .carousel-btn {

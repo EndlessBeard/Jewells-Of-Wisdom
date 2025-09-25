@@ -320,6 +320,10 @@ const Toolbar = () => {
                       <input type="color" value={panelColors['shop-btn-outline'] || '#000000'} onChange={(e) => setColorFor('shop-btn-outline', e.target.value)} />
                     </label>
                     <label className="panel-color-row">
+                      <span className="panel-color-label">Shop - Buttons text color</span>
+                      <input type="color" value={panelColors['shop-btn-color'] || '#111111'} onChange={(e) => setColorFor('shop-btn-color', e.target.value)} />
+                    </label>
+                    <label className="panel-color-row">
                       <span className="panel-color-label">Shop - Outline width (px)</span>
                       <input type="number" min="0" max="8" step="1" value={parseInt(panelColors['shop-outline-width'] || '1', 10)} onChange={(e) => setColorFor('shop-outline-width', `${e.target.value}px`)} />
                     </label>
