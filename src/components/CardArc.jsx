@@ -375,7 +375,7 @@ const CardArc = ({ onCardClick, fadeStart = 300, fadeEnd = 50 }) => {
             top: `${topFromCenter}px`,
             width: `${logoW}px`,
             height: `${logoH}px`,
-            zIndex: 60,
+            zIndex: 40,
             opacity: logoVisual.opacity,
             transform,
             transformOrigin: 'center center',

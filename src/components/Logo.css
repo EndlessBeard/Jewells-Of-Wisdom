@@ -12,7 +12,7 @@
     The CSS variables for the card shadow are expected to include units for offset/blur (px)
     and a unitless opacity. Provide sensible fallbacks. */
   box-shadow: 0 calc(var(--card-shadow-offset, 8px) * var(--scale,1)) calc(var(--card-shadow-blur, 24px) * var(--scale,1)) rgba(0,0,0,var(--card-shadow-opacity,0.12));
-  z-index: 200; /* above cards */
+  z-index: 40; /* positioned below cards */
   pointer-events: none;
   overflow: hidden;
   width: calc(80px * var(--scale, 1));
