@@ -1,0 +1,4 @@
+/* User override to ensure readable text color for the selected background (19). */
+:root {
+  --page-text-color: #213547; /* dark slate for contrast on lighter backgrounds */
+}
