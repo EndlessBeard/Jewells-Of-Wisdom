@@ -1,2 +1,33 @@
-/* GENERATED - no defaults yet. Run `node tools/applyDefaults.js exported.json` to populate this file. */
-
+/* GENERATED - applyDefaults.cjs */
+:root {
+  --desired-logo-panel-padding: 120;
+  --panel-bg: #d8d9d6;
+--toolbar-bg: #dadbd6;
+--logo-bg: #f8f3ef;
+--panel-bg-about-us: #fdf4a5;
+--panel-bg-author: #92bec0;
+--panel-bg-shop: #db88a1;
+--panel-bg-subscriptions: #d97a84;
+--panel-bg-services: #efc4c0;
+--panel-bg-shop-cat-books: #0ef70c;
+--panel-bg-shop-cat-shirts: #603cb4;
+--panel-bg-shop-cat-stickers: #c3d100;
+--panel-bg-shop-cat-crafts: #00bbe0;
+--panel-bg-shop-border: #000000;
+--panel-bg-shop-dir-prev: #000000;
+--panel-bg-shop-dir-next: #002aff;
+--panel-bg-shop-dir-next-bg: #fafafa;
+--panel-bg-shop-dir-prev-bg: #ff0000;
+--panel-bg-shop-outline-width: 1px;
+--panel-bg-shop-btn-outline: #000000;
+  --card-shadow-offset: 20px;
+--card-shadow-blur: 15px;
+--card-shadow-opacity: 0.52;
+  --logo-base-size: 10000px;
+--logo-inner-scale: 0.5;
+--base-logo-base-multiplier: 1.64;
+--base-logo-gap: -451px;
+--base-logo-y-adjust: 53px;
+  --page-bg-scale: 1;
+  --page-bg: url('/src/assets/backgrounds/19.png');
+}
