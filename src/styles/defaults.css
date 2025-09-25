@@ -1,5 +1,4 @@
 /* Project default CSS variable placeholders. These will be overridden by generated-defaults.css if present. */
-@import './generated-defaults.css'; /* generated defaults (may be empty until you run the tool) */
 :root {
   /* Permanently default to background #19 for deploys */
   --page-bg: url('/src/assets/backgrounds/19.png');
@@ -12,3 +11,4 @@
   --card-shadow-blur: 20px;
   --card-shadow-opacity: 0.08;
 }
+@import './generated-defaults.css'; /* generated defaults (may be empty until you run the tool) */
