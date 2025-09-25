@@ -1,0 +1,56 @@
+.temp-logo {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform-origin: center;
+  border-radius: 50%;
+  background: var(--logo-bg, radial-gradient(135deg,#ffd27a,#ff9a9e));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Use the same shadow variables as CardArc so the Effects sliders control the logo background shadow.
+    The CSS variables for the card shadow are expected to include units for offset/blur (px)
+    and a unitless opacity. Provide sensible fallbacks. */
+  box-shadow: 0 calc(var(--card-shadow-offset, 8px) * var(--scale,1)) calc(var(--card-shadow-blur, 24px) * var(--scale,1)) rgba(0,0,0,var(--card-shadow-opacity,0.12));
+  z-index: 200; /* above cards */
+  pointer-events: none;
+  overflow: hidden;
+  width: calc(80px * var(--scale, 1));
+  height: calc(80px * var(--scale, 1));
+}
+.temp-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+.temp-logo-label {
+  font-weight: 700;
+  color: #2b2b2b;
+  font-size: calc(1.25rem * var(--scale, 1));
+}
+
+/* Logo control variables (defaults):
+   --logo-base-size: diameter in px (defaults to 80px)
+   --logo-vertical-offset: px to add to top (defaults to 0px)
+   --logo-inner-scale: multiplier for inner image (defaults to 1)
+   --logo-anim-enabled: 1 or 0 to enable/disable animation (defaults to 1)
+*/
+.temp-logo {
+  top: calc(50% + var(--logo-vertical-offset, 0px));
+  width: calc(var(--logo-base-size, 80px) * var(--scale, 1));
+  height: calc(var(--logo-base-size, 80px) * var(--scale, 1));
+}
+.temp-logo img {
+  width: calc(100% * var(--logo-inner-scale, 1));
+  height: calc(100% * var(--logo-inner-scale, 1));
+}
+
+/* When animations are disabled (0), force none */
+.logo-anim-disabled .temp-logo,
+.logo-anim-disabled .temp-logo img,
+.logo-anim-disabled .temp-logo-label {
+  transition: none !important;
+  animation: none !important;
+  transform: none !important;
+}

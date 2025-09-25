@@ -1,0 +1,83 @@
+.card-arc-container {
+  position: relative;
+  width: 100%;
+  max-width: 1280px; /* align with #root */
+  height: var(--wrapper-h, 0px);
+  margin: 0px auto 0 auto; /* center container within canvas */
+  box-sizing: border-box;
+  padding: 0 var(--canvas-side-gap, 2rem); /* match app canvas side gap */
+  pointer-events: none;
+}
+.card-arc-center-wrapper {
+  position: absolute;
+  left: 50%;
+  top: 200px;
+  transform: translateX(-50%);
+  width: calc(100% - (var(--canvas-side-gap, 2rem) * 2)); /* responsive width within canvas */
+  max-width: var(--canvas-max-width, 520px);
+  height: var(--wrapper-h, 320px);
+}
+.card-arc-card {
+  width: var(--card-w, 120px);
+  height: var(--card-h, 180px);
+  perspective: 800px;
+  pointer-events: auto;
+  cursor: pointer;
+  transition: z-index 0.2s, opacity 220ms ease;
+}
+.card-arc-inner {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  transition: transform 0.5s;
+  transform-style: preserve-3d;
+}
+.card-arc-card.flipped .card-arc-inner {
+  transform: rotateY(180deg);
+}
+.card-arc-card:hover .card-arc-inner {
+  transform: rotateY(180deg);
+}
+.card-arc-front, .card-arc-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(1.1rem * var(--scale, 1));
+  border-radius: calc(16px * var(--scale, 1));
+  /* card shadow variables are expected to be set on :root by the Toolbar.
+    Fallback values are provided here (include units where appropriate).
+    --card-shadow-offset: distance in px (default 8px)
+    --card-shadow-blur: blur radius in px (default 20px)
+    --card-shadow-opacity: opacity 0..1 (default 0.08)
+  */
+  box-shadow: 0 calc(var(--card-shadow-offset, 8px) * var(--scale,1)) calc(var(--card-shadow-blur, 20px) * var(--scale,1)) rgba(0,0,0,var(--card-shadow-opacity,0.08));
+  background: #f7f7f7;
+}
+.card-arc-back {
+  background: #e0e0e0;
+  color: #333;
+}
+.card-arc-front {
+  background: #fff;
+  color: #222;
+  transform: rotateY(180deg);
+}
+
+/* temporary backside styling */
+.card-back-content {
+  text-align: center;
+  padding: 1rem;
+}
+.card-back-title {
+  margin: 0;
+  font-size: calc(1rem * var(--scale, 1));
+}
+.card-back-sub {
+  margin: 0.25rem 0 0 0;
+  font-size: calc(0.85rem * var(--scale, 1));
+  color: #555;
+}

@@ -1,0 +1,133 @@
+.toolbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 48px;
+  background: var(--toolbar-bg, #fff);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  z-index: 1000;
+}
+.toolbar-inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2rem;
+  box-sizing: border-box;
+}
+.toolbar-title {
+  font-size: 1.25rem;
+  font-weight: bold;
+}
+.toolbar-menu {
+  display: flex;
+  align-items: center;
+}
+.menu-icon {
+  background: none;
+  border: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  cursor: pointer;
+  padding: 8px;
+}
+.menu-icon span {
+  display: block;
+  width: 24px;
+  height: 3px;
+  background: #222;
+  border-radius: 2px;
+}
+
+/* Dropdown menu for backgrounds */
+.toolbar-dropdown {
+  position: absolute;
+  right: 2rem;
+  top: 56px;
+  width: 220px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+  padding: 0.5rem;
+  z-index: 1100;
+  /* reduce all control panel text by ~5pt relative to the page base */
+  font-size: calc(1rem - 5pt);
+}
+.toolbar-dropdown .dropdown-title {
+  font-weight: 700;
+  padding: 0.25rem 0.5rem;
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+  margin-bottom: 0.5rem;
+}
+
+/* Collapsible backgrounds section */
+.collapsible-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  background: transparent;
+  border: none;
+  padding: 0.25rem 0.25rem;
+  cursor: pointer;
+}
+.collapsible-header .dropdown-title { margin: 0; padding: 0; border: none; }
+.chev {
+  width: 12px;
+  height: 12px;
+  border-right: 2px solid #333;
+  border-bottom: 2px solid #333;
+  transform: rotate(-45deg);
+  transition: transform 180ms ease;
+  margin-left: 0.5rem;
+}
+.chev.open { transform: rotate(45deg); }
+.collapsible-content { max-height: 0; overflow: hidden; transition: max-height 240ms ease; }
+.collapsible-content.open { max-height: 420px; /* enough to show options */ }
+.toolbar-dropdown ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.25rem;
+}
+.bg-option {
+  width: 100%;
+  text-align: left;
+  padding: 0.45rem 0.5rem;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 6px;
+}
+.bg-option:hover { background: rgba(0,0,0,0.03); }
+.bg-option.selected { background: linear-gradient(90deg,#f0f0ff,#fff); font-weight: 700; }
+
+.bg-dropdown-row select { width: 100%; padding: 0.45rem 0.5rem; border-radius: 6px; }
+.bg-scale-row { display:flex; gap:0.5rem; align-items:center; padding-top:0.5rem; }
+.bg-scale-row label { font-weight:700; margin-right:0.5rem }
+.scale-btn { padding:0.25rem 0.5rem; border-radius:6px; border:1px solid transparent; background:transparent; cursor:pointer }
+.scale-btn.active { background: linear-gradient(90deg,#f0f0ff,#fff); font-weight:700 }
+
+.dropdown-section { padding: 0.5rem 0; }
+.panel-color-grid { display: grid; gap: 0.25rem; }
+.panel-color-row { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; padding: 0.25rem 0.25rem; }
+.panel-color-label { font-size: inherit; }
+.panel-color-row input[type="color"] { width: calc(2.2rem * 0.67); height: calc(2.2rem * 0.67); border: none; padding: 0; background: none; cursor: pointer; }
+
+/* Subsection for shop controls inside panel colors */
+.dropdown-subsection { margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px dashed rgba(0,0,0,0.04); }
+.dropdown-subsection .dropdown-subcontent { display: grid; gap: 0.25rem; margin-top: 0.5rem; }
+.dropdown-subsection .collapsible-header { cursor: default; }
+
+/* Logo controls layout */
+.logo-controls-grid { display: grid; gap: 0.5rem; }
+.logo-control-row { display: grid; grid-template-columns: 3rem 1fr 8rem; align-items: center; gap: 0.5rem; }
+.logo-control-value { font-weight: 700; text-align: right; padding-right: 0.5rem; }
+.logo-control-label { font-size: inherit; }
+.logo-control-row input[type="range"] { width: 100%; }
+.logo-control-row input[type="number"] { width: 100%; }

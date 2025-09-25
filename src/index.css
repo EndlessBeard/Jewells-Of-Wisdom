@@ -1,0 +1,92 @@
+:root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  /* canvas layout variables used by CardArc and InfoPanel */
+  --canvas-side-gap: .6rem; /* side padding that frames the canvas */
+  --canvas-max-width: 520px; /* inner centered canvas max width for panels/arc */
+
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #242424;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  font-weight: 500;
+  color: #646cff;
+  text-decoration: inherit;
+}
+a:hover {
+  color: #535bf2;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  /* keep horizontal centering but allow vertical content to grow and scroll */
+  flex-direction: column;
+  align-items: center;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+/* Page background: centered, tile vertically. Use --page-bg variable so the toolbar menu can switch it. */
+:root {
+  --page-bg: url('./assets/background.png');
+  /* per-panel background variables (can be set via toolbar color pickers) */
+  --panel-bg-about-us: ;
+  --panel-bg-author: ;
+  --panel-bg-services: ;
+  --panel-bg-subscriptions: ;
+  --panel-bg-shop: ;
+}
+body {
+  background-image: var(--page-bg);
+  background-repeat: repeat; /* tile horizontally and vertically */
+  background-position: center top;
+  /* allow toolbar to set scale via --page-bg-scale (1 = 100%) */
+  background-size: calc(100% * var(--page-bg-scale, 1)) auto;
+}
+
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+}
+
+button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #1a1a1a;
+  cursor: pointer;
+  transition: border-color 0.25s;
+}
+button:hover {
+  border-color: #646cff;
+}
+button:focus,
+button:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color: #213547;
+    background-color: #ffffff;
+  }
+  a:hover {
+    color: #747bff;
+  }
+  button {
+    background-color: #f9f9f9;
+  }
+}
