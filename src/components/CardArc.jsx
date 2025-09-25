@@ -383,7 +383,11 @@ const CardArc = ({ onCardClick, fadeStart = 300, fadeEnd = 50 }) => {
             transition: 'transform 220ms linear, opacity 220ms linear',
           };
 
-          return <Logo style={logoStyle} label="JW" ref={logoRef} />;
+          // Optional debug: set DEBUG to true to add a visible outline class on the logo
+          // and print computed style info to the console for diagnosing stacking contexts.
+          const DEBUG = false;
+
+          return <Logo style={logoStyle} label="JW" ref={logoRef} className={DEBUG ? 'debug-temp-logo' : ''} />;
         })()}
         {CARD_DATA.map((card, i) => {
           // Distribute cards from 180deg (left) to 0deg (right) in equal steps

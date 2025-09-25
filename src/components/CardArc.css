@@ -12,8 +12,8 @@
   position: absolute;
   left: 50%;
   top: 200px;
-  transform: translateX(-50%);
-  width: calc(100% - (var(--canvas-side-gap, 2rem) * 2)); /* responsive width within canvas */
+  transform: translate(-50%);
+  width: calc(100% - (var(--canvas-side-gap, 2rem) * 2));
   max-width: var(--canvas-max-width, 520px);
   height: var(--wrapper-h, 320px);
 }
