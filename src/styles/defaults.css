@@ -1,0 +1,13 @@
+/* Project default CSS variable placeholders. These will be overridden by generated-defaults.css if present. */
+@import './generated-defaults.css'; /* generated defaults (may be empty until you run the tool) */
+:root {
+  --page-bg: url('../assets/background.png');
+  --page-bg-scale: 1;
+  --panel-bg: linear-gradient(180deg,#fff,#fbfbfb);
+  --toolbar-bg: #ffffff;
+  --logo-bg: radial-gradient(135deg,#ffd27a,#ff9a9e);
+  --desired-logo-panel-padding: 24;
+  --card-shadow-offset: 8px;
+  --card-shadow-blur: 20px;
+  --card-shadow-opacity: 0.08;
+}
