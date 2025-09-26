@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Toolbar from './Toolbar';
 import './TestCardArc.css';
+import { computeCardLayout } from '../utils/computeLayout';
 
 // Reuse card data from CardArc to keep labels consistent; import directly to avoid circular deps
 import AboutUs_front from '../assets/AboutUs_front.png';
@@ -38,7 +39,8 @@ function TestCardArc() {
     if (!el) return;
     const measure = () => {
       const r = el.getBoundingClientRect();
-      setWrapperSize({ width: r.width, height: r.height });
+      const layout = computeCardLayout(window.innerWidth, window.innerHeight, { maxCanvasWidth: 900 });
+      setWrapperSize({ width: r.width || layout.wrapperW, height: layout.wrapperH });
     };
     measure();
     const ro = new ResizeObserver(() => measure());
@@ -46,16 +48,8 @@ function TestCardArc() {
     return () => ro.disconnect();
   }, []);
 
-  // compute minimal outline positions using same math as CardArc but without detailed CSS
-  const metrics = (() => {
-    const scale = (wrapperSize.width || 520) / IDEAL_WIDTH;
-    const cardW = Math.round(BASE_CARD_WIDTH * scale);
-    const cardH = Math.round(BASE_CARD_HEIGHT * scale);
-    const radiusX = BASE_RADIUS_X * scale;
-    const radiusY = BASE_RADIUS_Y * scale;
-    const yOffsets = BASE_Y_OFFSETS.map(v => v * scale);
-    return { cardW, cardH, radiusX, radiusY, yOffsets, scale };
-  })();
+  // compute layout using central util (allowing tuning via CSS vars later)
+  const metrics = computeCardLayout(window.innerWidth, window.innerHeight, { maxCanvasWidth: 900 });
 
   return (
     <div>

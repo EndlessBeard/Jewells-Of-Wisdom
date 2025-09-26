@@ -81,3 +81,13 @@
   font-size: calc(0.85rem * var(--scale, 1));
   color: #555;
 }
+
+/* Debug outlines: toggle by adding "debug-outlines" class to documentElement (root) */
+:root.debug-outlines .card-arc-card {
+  outline: 2px dashed rgba(255, 0, 128, 0.85);
+  box-shadow: none !important; /* reduce visual noise while debugging */
+}
+
+:root.debug-outlines .card-arc-inner {
+  transform: none !important; /* avoid flipped/animation transforms interfering with outlines */
+}
