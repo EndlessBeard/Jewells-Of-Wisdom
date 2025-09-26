@@ -100,6 +100,27 @@ const Toolbar = () => {
   document.documentElement.style.setProperty('--base-logo-base-multiplier', String(merged.baseMultiplier));
   document.documentElement.style.setProperty('--base-logo-gap', `${merged.gap}px`);
   document.documentElement.style.setProperty('--base-logo-y-adjust', `${merged.yAdjust}px`);
+      // ensure layout percent vars exist (defaults)
+      try {
+        const lp = localStorage.getItem('jow.layout.cardPercent');
+        if (lp) document.documentElement.style.setProperty('--layout-card-percent', lp);
+        else if (!getComputedStyle(document.documentElement).getPropertyValue('--layout-card-percent')) document.documentElement.style.setProperty('--layout-card-percent', '22');
+      } catch {}
+      try {
+        const lp2 = localStorage.getItem('jow.layout.logoPercent');
+        if (lp2) document.documentElement.style.setProperty('--layout-logo-percent', lp2);
+        else if (!getComputedStyle(document.documentElement).getPropertyValue('--layout-logo-percent')) document.documentElement.style.setProperty('--layout-logo-percent', '8');
+      } catch {}
+      try {
+        const lp3 = localStorage.getItem('jow.layout.logoPaddingPercent');
+        if (lp3) document.documentElement.style.setProperty('--layout-logo-padding-percent', lp3);
+        else if (!getComputedStyle(document.documentElement).getPropertyValue('--layout-logo-padding-percent')) document.documentElement.style.setProperty('--layout-logo-padding-percent', '6');
+      } catch {}
+      try {
+        const lp4 = localStorage.getItem('jow.layout.edgePaddingPercent');
+        if (lp4) document.documentElement.style.setProperty('--layout-edge-padding-percent', lp4);
+        else if (!getComputedStyle(document.documentElement).getPropertyValue('--layout-edge-padding-percent')) document.documentElement.style.setProperty('--layout-edge-padding-percent', '4');
+      } catch {}
       if (!merged.animation) document.documentElement.classList.add('logo-anim-disabled');
       else document.documentElement.classList.remove('logo-anim-disabled');
     } catch {
@@ -397,6 +418,79 @@ const Toolbar = () => {
                     <div className="logo-control-row">
                       <span className="logo-control-label">Animation</span>
                       <input type="checkbox" checked={logoSettings.animation ?? true} onChange={(e) => saveLogoSettings({ ...logoSettings, animation: e.target.checked })} />
+                    </div>
+
+                    {/* Layout percentage controls (card size, logo size, paddings) */}
+                    <div className="logo-control-row">
+                      <span className="logo-control-value">{parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--layout-card-percent') || '22')}%</span>
+                      <label className="logo-control-label">Card width (% of viewport)</label>
+                      <input
+                        type="range"
+                        min="8"
+                        max="40"
+                        step="1"
+                        defaultValue={parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--layout-card-percent') || '22')}
+                        onChange={(e) => {
+                          const v = String(parseFloat(e.target.value));
+                          document.documentElement.style.setProperty('--layout-card-percent', v);
+                          try { localStorage.setItem('jow.layout.cardPercent', v); } catch {}
+                          try { window.dispatchEvent(new Event('resize')); } catch {}
+                        }}
+                      />
+                    </div>
+
+                    <div className="logo-control-row">
+                      <span className="logo-control-value">{parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--layout-logo-percent') || '8')}%</span>
+                      <label className="logo-control-label">Logo size (% of viewport width)</label>
+                      <input
+                        type="range"
+                        min="4"
+                        max="20"
+                        step="0.5"
+                        defaultValue={parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--layout-logo-percent') || '8')}
+                        onChange={(e) => {
+                          const v = String(parseFloat(e.target.value));
+                          document.documentElement.style.setProperty('--layout-logo-percent', v);
+                          try { localStorage.setItem('jow.layout.logoPercent', v); } catch {}
+                          try { window.dispatchEvent(new Event('resize')); } catch {}
+                        }}
+                      />
+                    </div>
+
+                    <div className="logo-control-row">
+                      <span className="logo-control-value">{parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--layout-logo-padding-percent') || '6')}%</span>
+                      <label className="logo-control-label">Logo padding (% of viewport height)</label>
+                      <input
+                        type="range"
+                        min="0"
+                        max="20"
+                        step="0.5"
+                        defaultValue={parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--layout-logo-padding-percent') || '6')}
+                        onChange={(e) => {
+                          const v = String(parseFloat(e.target.value));
+                          document.documentElement.style.setProperty('--layout-logo-padding-percent', v);
+                          try { localStorage.setItem('jow.layout.logoPaddingPercent', v); } catch {}
+                          try { window.dispatchEvent(new Event('resize')); } catch {}
+                        }}
+                      />
+                    </div>
+
+                    <div className="logo-control-row">
+                      <span className="logo-control-value">{parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--layout-edge-padding-percent') || '4')}%</span>
+                      <label className="logo-control-label">Edge padding (% of viewport width)</label>
+                      <input
+                        type="range"
+                        min="0"
+                        max="12"
+                        step="0.5"
+                        defaultValue={parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--layout-edge-padding-percent') || '4')}
+                        onChange={(e) => {
+                          const v = String(parseFloat(e.target.value));
+                          document.documentElement.style.setProperty('--layout-edge-padding-percent', v);
+                          try { localStorage.setItem('jow.layout.edgePaddingPercent', v); } catch {}
+                          try { window.dispatchEvent(new Event('resize')); } catch {}
+                        }}
+                      />
                     </div>
 
                     <div className="logo-control-row">
