@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import Toolbar from './Toolbar';
 import './TestCardArc.css';
 import { computeCardLayout } from '../utils/computeLayout';
+import Logo from './Logo';
 
 // Reuse card data from CardArc to keep labels consistent; import directly to avoid circular deps
 import AboutUs_front from '../assets/AboutUs_front.png';
@@ -66,6 +67,48 @@ function TestCardArc() {
       <div className="test-card-arc-container">
         <div className="test-card-arc-center-wrapper" ref={wrapperRef}>
           <div className="test-center-dot" />
+          {/* Render the real Logo at the computed center so the debug outline matches production positioning */}
+          {(() => {
+            try {
+              const rootComputed = typeof window !== 'undefined' ? getComputedStyle(document.documentElement) : null;
+              const getNum = (name, fallback) => {
+                if (!rootComputed) return fallback;
+                const v = rootComputed.getPropertyValue(name);
+                if (!v) return fallback;
+                const parsed = parseFloat(v);
+                return Number.isFinite(parsed) ? parsed : fallback;
+              };
+              const baseMultiplier = getNum('--base-logo-base-multiplier', 1.3);
+              const baseGap = getNum('--base-logo-gap', -420);
+              const baseYAdjust = getNum('--base-logo-y-adjust', 0);
+
+              const layout = metrics; // already computed above
+              const scale = layout.scale || 1;
+              const cardH = layout.cardH;
+              const rY = layout.radiusY;
+
+              const logoW = Math.round((layout.cardW || 120) * baseMultiplier);
+              const logoH = logoW;
+              const logoY = - (rY + cardH / 2 + baseGap * scale) + baseYAdjust * scale;
+
+              const leftFromCenter = wrapperSize.width / 2 - logoW / 2;
+              const topFromCenter = logoY + wrapperSize.height / 2 - logoH / 2;
+
+              const logoStyle = {
+                position: 'absolute',
+                left: `${leftFromCenter}px`,
+                top: `${topFromCenter}px`,
+                width: `${logoW}px`,
+                height: `${logoH}px`,
+                zIndex: 0,
+                pointerEvents: 'none',
+              };
+
+              return <Logo style={logoStyle} label="JW" />;
+            } catch (e) {
+              return null;
+            }
+          })()}
           {CARD_DATA.map((c, i) => {
             const total = CARD_DATA.length - 1;
             const angle = Math.PI - (i * Math.PI) / total;

@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import './CardArc.css';
 import Logo from './Logo';
+import { computeCardLayout } from '../utils/computeLayout';
 
 // card images (front/back) — imported from assets folder
 import AboutUs_front from '../assets/AboutUs_front.png';
@@ -108,7 +109,10 @@ const CardArc = ({ onCardClick, fadeStart = 300, fadeEnd = 50 }) => {
     // initial measure
     const measure = () => {
       const rect = el.getBoundingClientRect();
-      setWrapperSize({ width: rect.width, height: rect.height });
+      // compute a more robust layout based on viewport and rect
+      const layout = computeCardLayout(window.innerWidth, window.innerHeight, { maxCanvasWidth: 900 });
+      // prefer the wrapper width but trust computeCardLayout's wrapperW for consistent scaling
+      setWrapperSize({ width: rect.width || layout.wrapperW, height: layout.wrapperH });
     };
 
     measure();
@@ -309,16 +313,16 @@ const CardArc = ({ onCardClick, fadeStart = 300, fadeEnd = 50 }) => {
   useEffect(() => {
     const el = wrapperRef.current;
     if (!el) return;
-    const wrapperW = wrapperSize.width || WRAPPER_WIDTH;
-    const wrapperH = wrapperSize.height || WRAPPER_HEIGHT;
-    const scale = wrapperW / IDEAL_WIDTH;
-
-    const cardW = Math.round(BASE_CARD_WIDTH * scale);
-    const cardH = Math.round(BASE_CARD_HEIGHT * scale);
-    const radiusX = BASE_RADIUS_X * scale;
-    const radiusY = BASE_RADIUS_Y * scale;
-    // scaled yOffsets
-    const yOffsets = BASE_Y_OFFSETS.map(v => v * scale);
+    // Use the computeCardLayout util to derive stable metrics
+    const layout = computeCardLayout(window.innerWidth, window.innerHeight, { maxCanvasWidth: 900 });
+    const wrapperW = wrapperSize.width || layout.wrapperW;
+    const wrapperH = wrapperSize.height || layout.wrapperH;
+    const cardW = layout.cardW;
+    const cardH = layout.cardH;
+    const radiusX = layout.radiusX;
+    const radiusY = layout.radiusY;
+    const yOffsets = layout.yOffsets;
+    const scale = layout.scale;
 
     el.style.setProperty('--scale', String(scale));
     el.style.setProperty('--card-w', `${cardW}px`);
