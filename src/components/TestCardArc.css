@@ -1,0 +1,46 @@
+/* Minimal test styles for the CardArc test page. Intentionally small: outlines only */
+.test-card-arc-container {
+  position: relative;
+  width: 100%;
+  max-width: 900px;
+  height: 520px;
+  margin: 6rem auto 4rem auto; /* leave room for the toolbar */
+  background: transparent;
+  border: 1px dashed rgba(0,0,0,0.08);
+}
+.test-card-arc-center-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.test-card-outline {
+  position: absolute;
+  box-sizing: border-box;
+  border: 2px dashed rgba(0,0,0,0.12);
+  background: rgba(255,255,255,0.02);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(0,0,0,0.85);
+  font-weight: 700;
+  border-radius: 8px;
+  pointer-events: none; /* non-interactive for baseline positioning test */
+}
+
+/* show the wrapper center for reference */
+.test-center-dot {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  margin-left: -4px;
+  margin-top: -4px;
+  background: rgba(0,0,0,0.6);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+/* ensure the toolbar styles are available when Toolbar is rendered */
+/* toolbar rules are imported from the main toolbar stylesheet when Toolbar is rendered */
