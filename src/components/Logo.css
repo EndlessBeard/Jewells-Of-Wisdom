@@ -15,14 +15,19 @@
   z-index: 0; /* positioned below cards */
   pointer-events: none;
   overflow: hidden;
-  width: calc(80px * var(--scale, 1));
-  height: calc(80px * var(--scale, 1));
+  /* Allow inline styles (px strings) to override; when not set, fall back to CSS vars. */
+  width: var(--temp-logo-width, calc(80px * var(--scale, 1)));
+  height: var(--temp-logo-height, calc(80px * var(--scale, 1)));
+  /* Keep a 1:1 aspect to ensure perfect circle even if widths/heights differ slightly */
+  aspect-ratio: 1 / 1;
+  box-sizing: border-box;
 }
 .temp-logo img {
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: cover; /* ensure image fills the circular area */
   display: block;
+  border-radius: 50%; /* reinforce circular clipping */
 }
 .temp-logo-label {
   font-weight: 700;
@@ -38,8 +43,9 @@
 */
 .temp-logo {
   top: calc(50% + var(--logo-vertical-offset, 0px));
-  width: calc(var(--logo-base-size, 80px) * var(--scale, 1));
-  height: calc(var(--logo-base-size, 80px) * var(--scale, 1));
+  /* map base-size into fallback CSS variables used above */
+  --temp-logo-width: calc(var(--logo-base-size, 80px) * var(--scale, 1));
+  --temp-logo-height: calc(var(--logo-base-size, 80px) * var(--scale, 1));
 }
 .temp-logo img {
   width: calc(100% * var(--logo-inner-scale, 1));
