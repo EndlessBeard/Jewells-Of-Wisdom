@@ -34,6 +34,15 @@ function TestCardArc() {
   const wrapperRef = useRef(null);
   const [wrapperSize, setWrapperSize] = useState({ width: 520, height: 320 });
 
+  // Ensure debug outlines are visible by default on the test page (dev-only)
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'production') return undefined;
+    const root = document && document.documentElement;
+    if (!root) return undefined;
+    root.classList.add('debug-outlines');
+    return () => { root.classList.remove('debug-outlines'); };
+  }, []);
+
   useEffect(() => {
     const el = wrapperRef.current;
     if (!el) return;
