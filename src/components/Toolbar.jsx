@@ -25,7 +25,6 @@ const Toolbar = () => {
     baseSize: 120,
     verticalOffset: 0,
     innerScale: 1,
-    animation: true,
     // CardArc-linked controls
     baseMultiplier: 1.3,
     gap: -420,
@@ -121,8 +120,21 @@ const Toolbar = () => {
         if (lp4) document.documentElement.style.setProperty('--layout-edge-padding-percent', lp4);
         else if (!getComputedStyle(document.documentElement).getPropertyValue('--layout-edge-padding-percent')) document.documentElement.style.setProperty('--layout-edge-padding-percent', '4');
       } catch {}
-      if (!merged.animation) document.documentElement.classList.add('logo-anim-disabled');
-      else document.documentElement.classList.remove('logo-anim-disabled');
+      try {
+        const y = localStorage.getItem('jow.layout.logoYAdjustPercent');
+        if (y) {
+          document.documentElement.style.setProperty('--layout-logo-yadjust-percent', y);
+          try {
+            const cardPercent = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--layout-card-percent') || '22') / 100;
+            const cardWpx = (typeof window !== 'undefined') ? Math.max(0, Math.round(cardPercent * window.innerWidth)) : 0;
+            const cardAsp = 4.75 / 2.75;
+            const cardHpx = Math.round(cardWpx * cardAsp) || 0;
+            const yAdjustPx = Math.round((parseFloat(y) / 100) * cardHpx);
+            document.documentElement.style.setProperty('--base-logo-y-adjust', `${yAdjustPx}px`);
+          } catch {}
+        } else if (!getComputedStyle(document.documentElement).getPropertyValue('--layout-logo-yadjust-percent')) document.documentElement.style.setProperty('--layout-logo-yadjust-percent', '0');
+      } catch {}
+  // animation control removed; keep default CSS behavior
     } catch {
       // ignore
     }
@@ -206,8 +218,13 @@ const Toolbar = () => {
     if (typeof next.baseMultiplier === 'number') document.documentElement.style.setProperty('--base-logo-base-multiplier', String(next.baseMultiplier));
     if (typeof next.gap === 'number') document.documentElement.style.setProperty('--base-logo-gap', `${next.gap}px`);
     if (typeof next.yAdjust === 'number') document.documentElement.style.setProperty('--base-logo-y-adjust', `${next.yAdjust}px`);
-    if (!next.animation) document.documentElement.classList.add('logo-anim-disabled');
-    else document.documentElement.classList.remove('logo-anim-disabled');
+    // If percent-based layout keys exist on the next object, persist them too for compatibility
+    if (typeof next.logoYAdjustPercent === 'number') {
+      const v = String(next.logoYAdjustPercent);
+      document.documentElement.style.setProperty('--layout-logo-yadjust-percent', v);
+      try { localStorage.setItem('jow.layout.logoYAdjustPercent', v); } catch {}
+    }
+  // animation control removed; do not modify animation CSS here
   };
 
   const setDesiredLogoPanelPadding = (v) => {
@@ -359,93 +376,14 @@ const Toolbar = () => {
                 </button>
                 <div className={`collapsible-content ${logoOpen ? 'open' : ''}`}>
                   <div className="logo-controls-grid">
-                    {/* Slider row: left readout label, slider to the right */}
-                    <div className="logo-control-row">
-                      <span className="logo-control-value">{(logoSettings.baseMultiplier ?? 1.3).toFixed(2)}</span>
-                      <label className="logo-control-label">Base multiplier</label>
-                      <input
-                        type="range"
-                        min="0.5"
-                        max="2"
-                        step="0.01"
-                        value={logoSettings.baseMultiplier ?? 1.3}
-                        onChange={(e) => {
-                          const v = parseFloat(e.target.value);
-                          const next = { ...logoSettings, baseMultiplier: v };
-                          saveLogoSettings(next);
-                          // apply CSS var used by CardArc
-                          document.documentElement.style.setProperty('--base-logo-base-multiplier', String(v));
-                        }}
-                      />
-                    </div>
-
-                    <div className="logo-control-row">
-                      <span className="logo-control-value">{(logoSettings.gap ?? -420)}</span>
-                      <label className="logo-control-label">Logo gap (px)</label>
-                      <input
-                        type="range"
-                        min="-800"
-                        max="0"
-                        step="1"
-                        value={logoSettings.gap ?? -420}
-                        onChange={(e) => {
-                          const v = parseInt(e.target.value || '0', 10);
-                          const next = { ...logoSettings, gap: v };
-                          saveLogoSettings(next);
-                          document.documentElement.style.setProperty('--base-logo-gap', `${v}px`);
-                        }}
-                      />
-                    </div>
-
-                    <div className="logo-control-row">
-                      <span className="logo-control-value">{(logoSettings.yAdjust ?? 0)}</span>
-                      <label className="logo-control-label">Y adjust (px)</label>
-                      <input
-                        type="range"
-                        min="-200"
-                        max="200"
-                        step="1"
-                        value={logoSettings.yAdjust ?? 0}
-                        onChange={(e) => {
-                          const v = parseInt(e.target.value || '0', 10);
-                          const next = { ...logoSettings, yAdjust: v };
-                          saveLogoSettings(next);
-                          document.documentElement.style.setProperty('--base-logo-y-adjust', `${v}px`);
-                        }}
-                      />
-                    </div>
-
-                    <div className="logo-control-row">
-                      <span className="logo-control-label">Animation</span>
-                      <input type="checkbox" checked={logoSettings.animation ?? true} onChange={(e) => saveLogoSettings({ ...logoSettings, animation: e.target.checked })} />
-                    </div>
-
-                    {/* Layout percentage controls (card size, logo size, paddings) */}
-                    <div className="logo-control-row">
-                      <span className="logo-control-value">{parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--layout-card-percent') || '22')}%</span>
-                      <label className="logo-control-label">Card width (% of viewport)</label>
-                      <input
-                        type="range"
-                        min="8"
-                        max="40"
-                        step="1"
-                        defaultValue={parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--layout-card-percent') || '22')}
-                        onChange={(e) => {
-                          const v = String(parseFloat(e.target.value));
-                          document.documentElement.style.setProperty('--layout-card-percent', v);
-                          try { localStorage.setItem('jow.layout.cardPercent', v); } catch {}
-                          try { window.dispatchEvent(new Event('resize')); } catch {}
-                        }}
-                      />
-                    </div>
-
+                    {/* Simplified logo controls: size%, y-offset%, padding% */}
                     <div className="logo-control-row">
                       <span className="logo-control-value">{parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--layout-logo-percent') || '8')}%</span>
                       <label className="logo-control-label">Logo size (% of viewport width)</label>
                       <input
                         type="range"
                         min="4"
-                        max="20"
+                        max="100"
                         step="0.5"
                         defaultValue={parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--layout-logo-percent') || '8')}
                         onChange={(e) => {
@@ -453,6 +391,26 @@ const Toolbar = () => {
                           document.documentElement.style.setProperty('--layout-logo-percent', v);
                           try { localStorage.setItem('jow.layout.logoPercent', v); } catch {}
                           try { window.dispatchEvent(new Event('resize')); } catch {}
+                          try { window.dispatchEvent(new CustomEvent('layout:update')); } catch {}
+                        }}
+                      />
+                    </div>
+
+                    <div className="logo-control-row">
+                      <span className="logo-control-value">{parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--layout-logo-yadjust-percent') || '0')}%</span>
+                      <label className="logo-control-label">Logo Y adjust (% of card height)</label>
+                      <input
+                        type="range"
+                        min="-100"
+                        max="100"
+                        step="1"
+                        defaultValue={parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--layout-logo-yadjust-percent') || '0')}
+                        onChange={(e) => {
+                          const v = String(parseFloat(e.target.value));
+                          document.documentElement.style.setProperty('--layout-logo-yadjust-percent', v);
+                          try { localStorage.setItem('jow.layout.logoYAdjustPercent', v); } catch {}
+                          try { window.dispatchEvent(new Event('resize')); } catch {}
+                          try { window.dispatchEvent(new CustomEvent('layout:update')); } catch {}
                         }}
                       />
                     </div>
@@ -463,7 +421,7 @@ const Toolbar = () => {
                       <input
                         type="range"
                         min="0"
-                        max="20"
+                        max="100"
                         step="0.5"
                         defaultValue={parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--layout-logo-padding-percent') || '6')}
                         onChange={(e) => {
@@ -471,9 +429,32 @@ const Toolbar = () => {
                           document.documentElement.style.setProperty('--layout-logo-padding-percent', v);
                           try { localStorage.setItem('jow.layout.logoPaddingPercent', v); } catch {}
                           try { window.dispatchEvent(new Event('resize')); } catch {}
+                          try { window.dispatchEvent(new CustomEvent('layout:update')); } catch {}
                         }}
                       />
                     </div>
+
+                    {/* Layout percentage controls (card size, logo size, paddings) */}
+                    <div className="logo-control-row">
+                      <span className="logo-control-value">{parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--layout-card-percent') || '22')}%</span>
+                      <label className="logo-control-label">Card width (% of viewport)</label>
+                      <input
+                        type="range"
+                        min="8"
+                        max="100"
+                        step="1"
+                        defaultValue={parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--layout-card-percent') || '22')}
+                        onChange={(e) => {
+                          const v = String(parseFloat(e.target.value));
+                          document.documentElement.style.setProperty('--layout-card-percent', v);
+                          try { localStorage.setItem('jow.layout.cardPercent', v); } catch {}
+                          try { window.dispatchEvent(new Event('resize')); } catch {}
+                          try { window.dispatchEvent(new CustomEvent('layout:update')); } catch {}
+                        }}
+                      />
+                    </div>
+
+                    
 
                     <div className="logo-control-row">
                       <span className="logo-control-value">{parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--layout-edge-padding-percent') || '4')}%</span>
@@ -481,7 +462,7 @@ const Toolbar = () => {
                       <input
                         type="range"
                         min="0"
-                        max="12"
+                        max="100"
                         step="0.5"
                         defaultValue={parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--layout-edge-padding-percent') || '4')}
                         onChange={(e) => {

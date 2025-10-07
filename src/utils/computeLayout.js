@@ -51,7 +51,11 @@ export function computeCardLayout(viewW, viewH, opts = {}) {
   const scale = cardW / baseCardWidth;
 
   // radii scale with the card
-  const radiusX = Math.round(baseRadiusX * scale);
+  const unclampedRadiusX = Math.round(baseRadiusX * scale);
+  const safetyPx = opts.safetyPx != null ? opts.safetyPx : 8;
+  // ensure cards fit horizontally: max radius so left/right cards stay inside canvasW
+  const maxRadiusX = Math.floor(Math.max(0, (canvasW - cardW) / 2 - safetyPx));
+  const radiusX = Math.min(unclampedRadiusX, Math.max(0, maxRadiusX));
   const radiusY = Math.round(baseRadiusY * scale);
 
   const yOffsets = baseYOffsets.map(v => Math.round(v * scale));

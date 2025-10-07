@@ -56,6 +56,7 @@
   box-shadow: 0 10px 30px rgba(0,0,0,0.12);
   padding: 0.5rem;
   z-index: 1100;
+  overflow: hidden; /* ensure control visuals don't extend beyond the menu */
   /* reduce all control panel text by ~5pt relative to the page base */
   font-size: calc(1rem - 5pt);
 }
@@ -130,8 +131,8 @@
 
 /* Logo controls layout */
 .logo-controls-grid { display: grid; gap: 0.5rem; }
-.logo-control-row { display: grid; grid-template-columns: 3rem 1fr 8rem; align-items: center; gap: 0.5rem; }
+.logo-control-row { display: grid; grid-template-columns: 3rem 1fr minmax(6rem, 8rem); align-items: center; gap: 0.5rem; }
 .logo-control-value { font-weight: 700; text-align: right; padding-right: 0.5rem; }
 .logo-control-label { font-size: inherit; }
-.logo-control-row input[type="range"] { width: 100%; }
+.logo-control-row input[type="range"] { width: 100%; max-width: 100%; box-sizing: border-box; padding: 0; margin: 0; }
 .logo-control-row input[type="number"] { width: 100%; }

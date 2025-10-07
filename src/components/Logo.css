@@ -36,10 +36,9 @@
 }
 
 /* Logo control variables (defaults):
-   --logo-base-size: diameter in px (defaults to 80px)
-   --logo-vertical-offset: px to add to top (defaults to 0px)
-   --logo-inner-scale: multiplier for inner image (defaults to 1)
-   --logo-anim-enabled: 1 or 0 to enable/disable animation (defaults to 1)
+  --logo-base-size: diameter in px (defaults to 80px)
+  --logo-vertical-offset: px to add to top (defaults to 0px)
+  --logo-inner-scale: multiplier for inner image (defaults to 1)
 */
 .temp-logo {
   top: calc(50% + var(--logo-vertical-offset, 0px));
@@ -52,14 +51,18 @@
   height: calc(100% * var(--logo-inner-scale, 1));
 }
 
-/* When animations are disabled (0), force none */
-.logo-anim-disabled .temp-logo,
-.logo-anim-disabled .temp-logo img,
-.logo-anim-disabled .temp-logo-label {
-  transition: none !important;
+/* Force logo to be static (no CSS animations or transitions). The project no longer uses
+   logo-specific animations; disable them here to avoid unexpected motion. */
+.temp-logo,
+.temp-logo img,
+.temp-logo-label {
   animation: none !important;
-  transform: none !important;
+  transition: none !important;
+  will-change: auto !important;
 }
+
+/* When animations are disabled (0), force none */
+/* animation toggle removed; logo is static */
 
 /* Debug helper: add `.debug-temp-logo` class to make the logo outline obvious in the page
    and help inspect stacking order during development. Not enabled by default. */

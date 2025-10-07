@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Toolbar from './Toolbar';
 import './TestCardArc.css';
+import '../styles/debug-outlines.css';
 import { computeCardLayout } from '../utils/computeLayout';
 import Logo from './Logo';
 
@@ -50,12 +51,27 @@ function TestCardArc() {
     const measure = () => {
       const r = el.getBoundingClientRect();
       const layout = computeCardLayout(window.innerWidth, window.innerHeight, { maxCanvasWidth: 900 });
-      setWrapperSize({ width: r.width || layout.wrapperW, height: layout.wrapperH });
+      const wrapperH = layout.wrapperH;
+      try {
+        const toolbarEl = document.querySelector('.toolbar');
+        const toolbarBottom = toolbarEl ? Math.round(toolbarEl.getBoundingClientRect().bottom) : 0;
+        const bottomPadding = 12;
+        const availableH = Math.max(0, window.innerHeight - toolbarBottom - bottomPadding);
+        let topPos = toolbarBottom + Math.max(8, Math.round((availableH - wrapperH) / 2));
+        if (topPos + wrapperH > window.innerHeight - bottomPadding) topPos = Math.max(toolbarBottom + 8, window.innerHeight - bottomPadding - wrapperH);
+        try { el.style.top = `${topPos}px`; } catch (e) {}
+      } catch (e) {}
+      setWrapperSize({ width: r.width || layout.wrapperW, height: wrapperH });
     };
     measure();
     const ro = new ResizeObserver(() => measure());
     ro.observe(el);
-    return () => ro.disconnect();
+    const handler = () => measure();
+    window.addEventListener('layout:update', handler);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener('layout:update', handler);
+    };
   }, []);
 
   // compute layout using central util (allowing tuning via CSS vars later)
@@ -78,21 +94,26 @@ function TestCardArc() {
                 const parsed = parseFloat(v);
                 return Number.isFinite(parsed) ? parsed : fallback;
               };
-              const baseMultiplier = getNum('--base-logo-base-multiplier', 1.3);
-              const baseGap = getNum('--base-logo-gap', -420);
-              const baseYAdjust = getNum('--base-logo-y-adjust', 0);
-
+              // read percent-based logo controls (or fall back to legacy values)
               const layout = metrics; // already computed above
               const scale = layout.scale || 1;
               const cardH = layout.cardH;
               const rY = layout.radiusY;
 
-              const logoW = Math.round((layout.cardW || 120) * baseMultiplier);
-              const logoH = logoW;
-              const logoY = - (rY + cardH / 2 + baseGap * scale) + baseYAdjust * scale;
+              const multPercent = rootComputed ? parseFloat(rootComputed.getPropertyValue('--layout-logo-multiplier-percent') || '') : NaN;
+              const gapPercent = rootComputed ? parseFloat(rootComputed.getPropertyValue('--layout-logo-gap-percent') || '') : NaN;
+              const yAdjustPercent = rootComputed ? parseFloat(rootComputed.getPropertyValue('--layout-logo-yadjust-percent') || '') : NaN;
 
-              const leftFromCenter = wrapperSize.width / 2 - logoW / 2;
-              const topFromCenter = logoY + wrapperSize.height / 2 - logoH / 2;
+              const baseMultiplier = Number.isFinite(multPercent) ? (multPercent / 100) : getNum('--base-logo-base-multiplier', 1.3);
+              const gapPx = Number.isFinite(gapPercent) ? (gapPercent / 100) * cardH : getNum('--base-logo-gap', -420);
+              const yAdjustPx = Number.isFinite(yAdjustPercent) ? (yAdjustPercent / 100) * cardH : getNum('--base-logo-y-adjust', 0);
+
+              const logoW = layout.logoW || Math.round((layout.cardW || 120) * baseMultiplier);
+              const logoH = layout.logoH || logoW;
+              const logoY = - (rY + cardH / 2 + gapPx * scale) + yAdjustPx * scale;
+
+              const leftFromCenter = (wrapperSize.width || layout.wrapperW) / 2 - logoW / 2;
+              const topFromCenter = logoY + (wrapperSize.height || layout.wrapperH) / 2 - logoH / 2;
 
               const logoStyle = {
                 position: 'absolute',

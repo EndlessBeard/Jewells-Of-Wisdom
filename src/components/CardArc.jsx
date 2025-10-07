@@ -84,10 +84,24 @@ const CardArc = ({ onCardClick, fadeStart = 300, fadeEnd = 50 }) => {
       const parsed = parseFloat(v);
       return Number.isFinite(parsed) ? parsed : fallback;
     };
+
+    // read percent-based vars (fallback to legacy vars if percent not present)
+    const multPercent = getNum('--layout-logo-multiplier-percent', null);
+    const gapPercent = getNum('--layout-logo-gap-percent', null);
+    const yAdjustPercent = getNum('--layout-logo-yadjust-percent', null);
+
+    const legacyMult = getNum('--base-logo-base-multiplier', 1.3);
+    const legacyGap = getNum('--base-logo-gap', -420);
+    const legacyY = getNum('--base-logo-y-adjust', 0);
+
     return {
-      gap: getNum('--base-logo-gap', -420),
-      yAdjust: getNum('--base-logo-y-adjust', 0),
-      baseMultiplier: getNum('--base-logo-base-multiplier', 1.3),
+      baseMultiplierPercent: multPercent != null ? multPercent : legacyMult * 100,
+      // don't set gapPercent to a legacy px value; callers should check gapLegacyPx when gapPercent is null
+      gapPercent: gapPercent != null ? gapPercent : null,
+      yAdjustPercent: yAdjustPercent != null ? yAdjustPercent : null,
+      // keep legacy numeric fallbacks too
+      gapLegacyPx: legacyGap,
+      baseMultiplier: legacyMult,
     };
   };
   // Watermark target values (tweakable)
@@ -112,7 +126,23 @@ const CardArc = ({ onCardClick, fadeStart = 300, fadeEnd = 50 }) => {
       // compute a more robust layout based on viewport and rect
       const layout = computeCardLayout(window.innerWidth, window.innerHeight, { maxCanvasWidth: 900 });
       // prefer the wrapper width but trust computeCardLayout's wrapperW for consistent scaling
-      setWrapperSize({ width: rect.width || layout.wrapperW, height: layout.wrapperH });
+      const wrapperH = layout.wrapperH;
+      // position wrapper vertically: center in the area below the toolbar so cards remain on screen
+      try {
+        const toolbarEl = document.querySelector('.toolbar');
+        const toolbarBottom = toolbarEl ? Math.round(toolbarEl.getBoundingClientRect().bottom) : 0;
+        const bottomPadding = 12; // px breathing room from bottom of viewport
+        const availableH = Math.max(0, window.innerHeight - toolbarBottom - bottomPadding);
+        // center the wrapper in availableH, but clamp so it stays visible
+        let topPos = toolbarBottom + Math.max(8, Math.round((availableH - wrapperH) / 2));
+        // ensure wrapper doesn't overflow bottom
+        if (topPos + wrapperH > window.innerHeight - bottomPadding) topPos = Math.max(toolbarBottom + 8, window.innerHeight - bottomPadding - wrapperH);
+        // apply top position to wrapper element
+        try { el.style.top = `${topPos}px`; } catch (e) {}
+      } catch (e) {
+        /* ignore positioning failures */
+      }
+      setWrapperSize({ width: rect.width || layout.wrapperW, height: wrapperH });
     };
 
     measure();
@@ -130,7 +160,21 @@ const CardArc = ({ onCardClick, fadeStart = 300, fadeEnd = 50 }) => {
     return () => {
       if (ro) ro.disconnect();
       else window.removeEventListener('resize', measure);
+      try { window.removeEventListener('layout:update', measure); } catch {}
     };
+  }, []);
+
+  // respond to live layout updates from the toolbar controls
+  useEffect(() => {
+    const handler = () => {
+      const el = wrapperRef.current;
+      if (!el) return;
+      const r = el.getBoundingClientRect();
+      const layout = computeCardLayout(window.innerWidth, window.innerHeight, { maxCanvasWidth: 900 });
+      setWrapperSize({ width: r.width || layout.wrapperW, height: layout.wrapperH });
+    };
+    window.addEventListener('layout:update', handler);
+    return () => window.removeEventListener('layout:update', handler);
   }, []);
 
   // Measure the rendered Logo element and publish a CSS variable so InfoPanel can avoid overlap.
@@ -261,33 +305,11 @@ const CardArc = ({ onCardClick, fadeStart = 300, fadeEnd = 50 }) => {
 
       setOpacities(newOpacities);
 
-  // --- logo transform to watermark calculations ---
-  // compute logo anchored position (same math as render)
-  const { gap: BASE_LOGO_GAP, yAdjust: BASE_LOGO_Y_ADJUST } = getLogoVars();
-  const logoY = - (rY + cardH / 2 + BASE_LOGO_GAP * scale) + BASE_LOGO_Y_ADJUST * scale;
-      // initial center Y of logo in viewport coordinates
-      const logoCenterViewportY = rect.top + wrapperH / 2 + logoY;
-      // progress t: 0 => original logo, 1 => watermark
-      const logoStartPx = BASE_LOGO_START * scale;
-      const logoEndPx = BASE_LOGO_END * scale;
-      // avoid division by zero
-      const denom = (logoStartPx - logoEndPx) || 1;
-      let tLogo = (logoStartPx - rect.top) / denom;
-      tLogo = Math.max(0, Math.min(1, tLogo));
 
-      // final watermark parameters (scaled where appropriate)
-      const finalScale = BASE_LOGO_WM_SCALE;
-      const finalOpacity = BASE_LOGO_WM_OPACITY;
-
-      // compute translate to move logo's center to viewport center
-      const viewportCenterY = window.innerHeight / 2;
-      const deltaYToCenter = viewportCenterY - logoCenterViewportY;
-      const logoTranslateY = deltaYToCenter * tLogo;
-
-      const logoScale = 1 + (finalScale - 1) * tLogo;
-      const logoOpacity = 1 * (1 - tLogo) + finalOpacity * tLogo;
-
-      setLogoVisual({ opacity: logoOpacity, scale: logoScale, translateY: logoTranslateY });
+  // Logo watermark/zoom/fade behavior intentionally disabled.
+  // Previously we calculated a scroll-driven transform and opacity to morph the
+  // logo into a watermark; that effect is bypassed and the logo remains static.
+  setLogoVisual({ opacity: 1, scale: 1, translateY: 0 });
 
       rafId = null;
     };
@@ -298,7 +320,6 @@ const CardArc = ({ onCardClick, fadeStart = 300, fadeEnd = 50 }) => {
 
     // initial compute
     computeOpacities();
-
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', onScroll);
 
@@ -332,7 +353,7 @@ const CardArc = ({ onCardClick, fadeStart = 300, fadeEnd = 50 }) => {
     el.style.setProperty('--wrapper-h', `${wrapperH}px`);
 
     // store scaled metrics on ref for use in render positioning
-    el.__cardMetrics = { cardW, cardH, radiusX, radiusY, yOffsets, wrapperW, wrapperH, scale };
+    el.__cardMetrics = { cardW, cardH, radiusX, radiusY, yOffsets, wrapperW, wrapperH, scale, logoW: layout.logoW, logoH: layout.logoH };
   }, [wrapperSize]);
 
   const handleMouseEnter = idx => {
@@ -358,17 +379,19 @@ const CardArc = ({ onCardClick, fadeStart = 300, fadeEnd = 50 }) => {
           const cardH = metrics.cardH || BASE_CARD_HEIGHT;
           const scale = metrics.scale || (metrics.cardW ? metrics.cardW / BASE_CARD_WIDTH : 1);
 
-          // compute initial logo position relative to wrapper center
-          const { gap: BASE_LOGO_GAP, yAdjust: BASE_LOGO_Y_ADJUST, baseMultiplier: BASE_LOGO_BASE_MULTIPLIER } = getLogoVars();
-          const logoY = - (rY + cardH / 2 + BASE_LOGO_GAP * scale) + BASE_LOGO_Y_ADJUST * scale;
-          // compute logo width/height based on card width and the base multiplier
-          // initial logo size (px) = metrics.cardW * BASE_LOGO_BASE_MULTIPLIER
-          const logoW = (metrics && metrics.cardW) ? Math.round(metrics.cardW * BASE_LOGO_BASE_MULTIPLIER) : Math.round(BASE_CARD_WIDTH * BASE_LOGO_BASE_MULTIPLIER * scale);
-          const logoH = logoW;
+          // compute initial logo position relative to wrapper center using percent-driven vars
+          const gv2 = getLogoVars();
+          const BASE_LOGO_BASE_MULTIPLIER = (gv2.baseMultiplierPercent != null) ? (gv2.baseMultiplierPercent / 100) : gv2.baseMultiplier;
+          const gapPx2 = (gv2.gapPercent != null && !Number.isNaN(gv2.gapPercent)) ? (gv2.gapPercent / 100) * cardH : gv2.gapLegacyPx;
+          const yAdjustPx2 = (gv2.yAdjustPercent != null && !Number.isNaN(gv2.yAdjustPercent)) ? (gv2.yAdjustPercent / 100) * cardH : 0;
+          const logoY2 = - (rY + cardH / 2 + gapPx2 * scale) + yAdjustPx2 * scale;
+          // compute logo width/height: prefer percent-driven logoW/logoH, fallback to multiplier
+          const logoW = (metrics && metrics.logoW) ? metrics.logoW : ((metrics && metrics.cardW) ? Math.round(metrics.cardW * BASE_LOGO_BASE_MULTIPLIER) : Math.round(BASE_CARD_WIDTH * BASE_LOGO_BASE_MULTIPLIER * scale));
+          const logoH = (metrics && metrics.logoH) ? metrics.logoH : logoW;
 
           // place logo relative to wrapper center like cards
-          const leftFromCenter = 0 + wrapperSize.width / 2 - logoW / 2;
-          const topFromCenter = logoY + wrapperSize.height / 2 - logoH / 2;
+          const leftFromCenter = (wrapperSize.width || metrics.wrapperW) / 2 - logoW / 2;
+          const topFromCenter = logoY2 + (wrapperSize.height || metrics.wrapperH) / 2 - logoH / 2;
 
           // compose transform: apply translateY (computed from scroll) and scale (computed from scroll)
           const transform = `translateY(${logoVisual.translateY}px) scale(${logoVisual.scale})`;
