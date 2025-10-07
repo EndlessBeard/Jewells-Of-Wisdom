@@ -131,12 +131,23 @@ const CardArc = ({ onCardClick, fadeStart = 300, fadeEnd = 50 }) => {
       try {
         const toolbarEl = document.querySelector('.toolbar');
         const toolbarBottom = toolbarEl ? Math.round(toolbarEl.getBoundingClientRect().bottom) : 0;
-        const bottomPadding = 12; // px breathing room from bottom of viewport
+        // Read tunable spacing vars from :root so designers can adjust without code edits
+        const rootComputed = getComputedStyle(document.documentElement);
+        const parseNum = (s, fallback) => {
+          if (!s) return fallback;
+          const p = parseFloat(s);
+          return Number.isFinite(p) ? p : fallback;
+        };
+        const bottomPadding = parseNum(rootComputed.getPropertyValue('--cardarc-bottom-padding'), 12);
         const availableH = Math.max(0, window.innerHeight - toolbarBottom - bottomPadding);
         // center the wrapper in availableH, but clamp so it stays visible
-        let topPos = toolbarBottom + Math.max(8, Math.round((availableH - wrapperH) / 2));
-        // ensure wrapper doesn't overflow bottom
-        if (topPos + wrapperH > window.innerHeight - bottomPadding) topPos = Math.max(toolbarBottom + 8, window.innerHeight - bottomPadding - wrapperH);
+  // Read toolbar gap: prefer percent-based var (percent of viewport height), fall back to legacy px var
+  const toolbarGapPercent = parseNum(rootComputed.getPropertyValue('--layout-toolbar-gap-percent'), null);
+  const legacyPxGap = parseNum(rootComputed.getPropertyValue('--cardarc-toolbar-gap'), 8);
+  const minGap = (toolbarGapPercent != null && !Number.isNaN(toolbarGapPercent)) ? Math.round((toolbarGapPercent / 100) * window.innerHeight) : legacyPxGap;
+  let topPos = toolbarBottom + Math.max(minGap, Math.round((availableH - wrapperH) / 2));
+  // ensure wrapper doesn't overflow bottom
+  if (topPos + wrapperH > window.innerHeight - bottomPadding) topPos = Math.max(toolbarBottom + minGap, window.innerHeight - bottomPadding - wrapperH);
         // apply top position to wrapper element
         try { el.style.top = `${topPos}px`; } catch (e) {}
       } catch (e) {
@@ -382,7 +393,9 @@ const CardArc = ({ onCardClick, fadeStart = 300, fadeEnd = 50 }) => {
           // compute initial logo position relative to wrapper center using percent-driven vars
           const gv2 = getLogoVars();
           const BASE_LOGO_BASE_MULTIPLIER = (gv2.baseMultiplierPercent != null) ? (gv2.baseMultiplierPercent / 100) : gv2.baseMultiplier;
-          const gapPx2 = (gv2.gapPercent != null && !Number.isNaN(gv2.gapPercent)) ? (gv2.gapPercent / 100) * cardH : gv2.gapLegacyPx;
+          // Treat gapPercent as a percentage of the viewport height so vertical
+          // spacing behaves like other vertical padding controls (logoPaddingPercent)
+          const gapPx2 = (gv2.gapPercent != null && !Number.isNaN(gv2.gapPercent)) ? (gv2.gapPercent / 100) * window.innerHeight : gv2.gapLegacyPx;
           const yAdjustPx2 = (gv2.yAdjustPercent != null && !Number.isNaN(gv2.yAdjustPercent)) ? (gv2.yAdjustPercent / 100) * cardH : 0;
           const logoY2 = - (rY + cardH / 2 + gapPx2 * scale) + yAdjustPx2 * scale;
           // compute logo width/height: prefer percent-driven logoW/logoH, fallback to multiplier

@@ -57,7 +57,16 @@ function TestCardArc() {
         const toolbarBottom = toolbarEl ? Math.round(toolbarEl.getBoundingClientRect().bottom) : 0;
         const bottomPadding = 12;
         const availableH = Math.max(0, window.innerHeight - toolbarBottom - bottomPadding);
-        let topPos = toolbarBottom + Math.max(8, Math.round((availableH - wrapperH) / 2));
+        // compute toolbar gap: prefer percent-based var, fallback to 8px
+        const rootComputed = getComputedStyle(document.documentElement);
+        const parseNum = (s, fallback) => {
+          if (!s) return fallback;
+          const p = parseFloat(s);
+          return Number.isFinite(p) ? p : fallback;
+        };
+        const toolbarGapPercent = parseNum(rootComputed.getPropertyValue('--layout-toolbar-gap-percent'), NaN);
+        const toolbarGapPx = Number.isFinite(toolbarGapPercent) ? Math.round((toolbarGapPercent / 100) * window.innerHeight) : 8;
+        let topPos = toolbarBottom + Math.max(toolbarGapPx, Math.round((availableH - wrapperH) / 2));
         if (topPos + wrapperH > window.innerHeight - bottomPadding) topPos = Math.max(toolbarBottom + 8, window.innerHeight - bottomPadding - wrapperH);
         try { el.style.top = `${topPos}px`; } catch (e) {}
       } catch (e) {}
@@ -105,7 +114,8 @@ function TestCardArc() {
               const yAdjustPercent = rootComputed ? parseFloat(rootComputed.getPropertyValue('--layout-logo-yadjust-percent') || '') : NaN;
 
               const baseMultiplier = Number.isFinite(multPercent) ? (multPercent / 100) : getNum('--base-logo-base-multiplier', 1.3);
-              const gapPx = Number.isFinite(gapPercent) ? (gapPercent / 100) * cardH : getNum('--base-logo-gap', -420);
+              // Use viewport height for gap percent so vertical controls are consistent
+              const gapPx = Number.isFinite(gapPercent) ? (gapPercent / 100) * window.innerHeight : getNum('--base-logo-gap', -420);
               const yAdjustPx = Number.isFinite(yAdjustPercent) ? (yAdjustPercent / 100) * cardH : getNum('--base-logo-y-adjust', 0);
 
               const logoW = layout.logoW || Math.round((layout.cardW || 120) * baseMultiplier);
