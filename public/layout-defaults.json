@@ -1,0 +1,42 @@
+{
+  "panelColors": {
+    "about-us": "#fdf4a5",
+    "author": "#92bec0",
+    "_parent": "#d8d9d6",
+    "shop": "#db88a1",
+    "_toolbar": "#dadbd6",
+    "_logo": "#f8f3ef",
+    "subscriptions": "#d97a84",
+    "services": "#efc4c0",
+    "shop-cat-books": "#0ef70c",
+    "shop-cat-shirts": "#603cb4",
+    "shop-cat-stickers": "#c3d100",
+    "shop-cat-crafts": "#00bbe0",
+    "shop-border": "#000000",
+    "shop-dir-prev": "#000000",
+    "shop-dir-next": "#002aff",
+    "shop-dir-next-bg": "#fafafa",
+    "shop-dir-prev-bg": "#ff0000",
+    "shop-outline-width": "1px",
+    "shop-btn-outline": "#000000"
+  },
+  "logoSettings": {
+    "baseSize": 10000,
+    "verticalOffset": 0,
+    "innerScale": 0.5,
+    "animation": false,
+    "baseMultiplier": 2,
+    "gap": -451,
+    "yAdjust": 106
+  },
+  "selectedBackground": "/src/assets/backgrounds/19.png",
+  "backgroundScale": 1,
+  "layout": {
+    "cardPercent": 25,
+    "logoPercent": 42,
+    "logoPaddingPercent": 9,
+    "edgePaddingPercent": 0,
+    "toolbarGapPercent": 4,
+    "bottomPadding": -27
+  }
+}

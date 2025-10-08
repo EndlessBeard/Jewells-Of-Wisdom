@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import './Toolbar.css';
 import backgrounds from '../assets/backgrounds';
 import defaultBg from '../assets/background.png';
+import pkg from '../../package.json';
 
 const STORAGE_KEY = 'jow.selectedBackground';
 const BG_SCALE_KEY = 'jow.selectedBackgroundScale';
@@ -41,8 +42,64 @@ const Toolbar = () => {
   const [logoSettings, setLogoSettings] = useState({
     baseSize: 120, verticalOffset: 0, innerScale: 1, baseMultiplier: 1.3, gap: -420, yAdjust: 0
   });
+  const [toolbarGap, setToolbarGap] = useState(() => {
+    try {
+      const v = localStorage.getItem(LAYOUT_KEYS.toolbarGapPercent);
+      return v != null ? parseFloat(v) : parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--layout-toolbar-gap-percent') || '1');
+    } catch (e) { return parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--layout-toolbar-gap-percent') || '1'); }
+  });
+  const [bottomPad, setBottomPad] = useState(() => {
+    try {
+      const v = localStorage.getItem(LAYOUT_KEYS.bottomPadding);
+      if (v != null) return parseFloat(v);
+      return parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--cardarc-bottom-padding') || '12');
+    } catch (e) { return parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--cardarc-bottom-padding') || '12'); }
+  });
 
   const menuRef = useRef(null);
+
+  const buildDefaultsObject = () => {
+    const pc = (() => { try { return JSON.parse(localStorage.getItem(PANEL_COLORS_KEY) || '{}'); } catch { return {}; } })();
+    const logo = (() => { try { return JSON.parse(localStorage.getItem('jow.logoSettings') || '{}'); } catch { return {}; } })();
+    const selectedBg = (() => { try { return localStorage.getItem(STORAGE_KEY) || null; } catch { return null; } })();
+    const bgScale = (() => { try { return localStorage.getItem(BG_SCALE_KEY) || null; } catch { return null; } })();
+    const layout = {
+      cardPercent: localStorage.getItem(LAYOUT_KEYS.cardPercent) || getComputedStyle(document.documentElement).getPropertyValue('--layout-card-percent') || null,
+      logoPercent: localStorage.getItem(LAYOUT_KEYS.logoPercent) || getComputedStyle(document.documentElement).getPropertyValue('--layout-logo-percent') || null,
+      logoPaddingPercent: localStorage.getItem(LAYOUT_KEYS.logoPaddingPercent) || getComputedStyle(document.documentElement).getPropertyValue('--layout-logo-padding-percent') || null,
+      edgePaddingPercent: localStorage.getItem(LAYOUT_KEYS.edgePaddingPercent) || getComputedStyle(document.documentElement).getPropertyValue('--layout-edge-padding-percent') || null,
+      toolbarGapPercent: localStorage.getItem(LAYOUT_KEYS.toolbarGapPercent) || getComputedStyle(document.documentElement).getPropertyValue('--layout-toolbar-gap-percent') || null,
+      bottomPadding: localStorage.getItem(LAYOUT_KEYS.bottomPadding) || getComputedStyle(document.documentElement).getPropertyValue('--cardarc-bottom-padding') || null,
+    };
+    // normalize values to numbers where appropriate
+    Object.keys(layout).forEach(k => { if (layout[k] != null) { const n = Number(layout[k]); if (!Number.isNaN(n)) layout[k] = n; } });
+
+    return {
+      panelColors: pc,
+      logoSettings: logo,
+      selectedBackground: selectedBg,
+      backgroundScale: bgScale ? Number(bgScale) : undefined,
+      layout
+    };
+  };
+
+  const exportDefaults = () => {
+    try {
+      const obj = buildDefaultsObject();
+      const data = JSON.stringify(obj, null, 2);
+      const blob = new Blob([data], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'layout-defaults.json';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      // noop
+    }
+  };
 
   // Hydrate state and CSS vars from localStorage on mount
   useEffect(() => {
@@ -245,7 +302,7 @@ const Toolbar = () => {
   return (
     <header className="toolbar">
       <div className="toolbar-inner">
-        <div className="toolbar-title">Jewells of Wisdom</div>
+  <div className="toolbar-title">Jewells of Wisdom <span className="toolbar-version">v{pkg.version}</span></div>
         <nav className="toolbar-menu" ref={menuRef}>
           <button className="menu-icon" aria-label="Open menu" onClick={toggleMenu}>
             <span></span><span></span><span></span>
@@ -387,12 +444,40 @@ const Toolbar = () => {
                 <div className={`collapsible-content ${toolbarOpen ? 'open' : ''}`}>
                   <div className="toolbar-controls-grid">
                     <label className="toolbar-control-row">
-                      <span>Toolbar gap (% of viewport height)</span>
-                      <input type="range" min="0" max="20" step="0.25" defaultValue={parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--layout-toolbar-gap-percent') || '1')} onChange={(e) => setToolbarGapPercent(e.target.value)} />
+                      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:'0.5rem'}}>
+                        <span>Toolbar gap (% of viewport height — negative lifts arc)</span>
+                        <div style={{minWidth:'6.5rem',textAlign:'right',fontWeight:700}}>{toolbarGap}% ({Math.round((toolbarGap/100) * window.innerHeight)}px)</div>
+                      </div>
+                      <input
+                        type="range"
+                        min={-100}
+                        max={100}
+                        step={0.25}
+                        value={toolbarGap}
+                        onChange={(e) => {
+                          const v = parseFloat(e.target.value);
+                          setToolbarGap(v);
+                          setToolbarGapPercent(v);
+                        }}
+                      />
                     </label>
                     <label className="toolbar-control-row">
-                      <span>Bottom padding (px)</span>
-                      <input type="range" min="0" max="120" step="1" defaultValue={parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--cardarc-bottom-padding') || '12')} onChange={(e) => setBottomPadding(e.target.value)} />
+                      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:'0.5rem'}}>
+                        <span>Bottom padding (px — negative pulls arc lower)</span>
+                        <div style={{minWidth:'6.5rem',textAlign:'right',fontWeight:700}}>{bottomPad}px</div>
+                      </div>
+                      <input
+                        type="range"
+                        min={-50}
+                        max={50}
+                        step={1}
+                        value={bottomPad}
+                        onChange={(e) => {
+                          const v = parseFloat(e.target.value);
+                          setBottomPad(v);
+                          setBottomPadding(v);
+                        }}
+                      />
                     </label>
                   </div>
                 </div>
@@ -430,6 +515,16 @@ const Toolbar = () => {
                   </div>
                 </div>
               </div>
+
+                {/* Export / Defaults */}
+                <div className="dropdown-section">
+                  <div className="collapsible-content open">
+                    <div style={{display:'flex',gap:'0.5rem',padding:'0.5rem'}}>
+                      <button onClick={exportDefaults} className="export-btn">Export defaults</button>
+                      <a className="hint" href="/layout-defaults.json" target="_blank" rel="noopener noreferrer">Open deployed defaults</a>
+                    </div>
+                  </div>
+                </div>
 
             </div>
           )}

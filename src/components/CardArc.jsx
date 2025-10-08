@@ -141,13 +141,28 @@ const CardArc = ({ onCardClick, fadeStart = 300, fadeEnd = 50 }) => {
         const bottomPadding = parseNum(rootComputed.getPropertyValue('--cardarc-bottom-padding'), 12);
         const availableH = Math.max(0, window.innerHeight - toolbarBottom - bottomPadding);
         // center the wrapper in availableH, but clamp so it stays visible
-  // Read toolbar gap: prefer percent-based var (percent of viewport height), fall back to legacy px var
+    // Read toolbar gap: prefer percent-based var (percent of viewport height), fall back to legacy px var
   const toolbarGapPercent = parseNum(rootComputed.getPropertyValue('--layout-toolbar-gap-percent'), null);
   const legacyPxGap = parseNum(rootComputed.getPropertyValue('--cardarc-toolbar-gap'), 8);
-  const minGap = (toolbarGapPercent != null && !Number.isNaN(toolbarGapPercent)) ? Math.round((toolbarGapPercent / 100) * window.innerHeight) : legacyPxGap;
-  let topPos = toolbarBottom + Math.max(minGap, Math.round((availableH - wrapperH) / 2));
-  // ensure wrapper doesn't overflow bottom
-  if (topPos + wrapperH > window.innerHeight - bottomPadding) topPos = Math.max(toolbarBottom + minGap, window.innerHeight - bottomPadding - wrapperH);
+  // For consistent visual spacing across resolutions, compute gap relative to the
+  // measured CardArc wrapper height instead of the viewport height. This keeps
+  // the gap proportional to the arc's size (cards/wrapper) so it looks similar
+  // on phones, tablets, and desktops.
+  let gapPx;
+  if (toolbarGapPercent != null && !Number.isNaN(toolbarGapPercent)) {
+    // Use wrapperH as the sizing basis; fallback to viewport height if wrapperH is missing
+    const basis = wrapperH && wrapperH > 0 ? wrapperH : window.innerHeight;
+    gapPx = Math.round((toolbarGapPercent / 100) * basis);
+  } else {
+    gapPx = legacyPxGap;
+  }
+
+  // Place the wrapper exactly `gapPx` below the toolbar (consistent gap).
+  let topPos = toolbarBottom + gapPx;
+  // clamp so the wrapper doesn't overflow the bottom of the viewport; preserve at least toolbarBottom+gapPx where possible
+  if (topPos + wrapperH > window.innerHeight - bottomPadding) {
+    topPos = Math.max(toolbarBottom + gapPx, window.innerHeight - bottomPadding - wrapperH);
+  }
         // apply top position to wrapper element
         try { el.style.top = `${topPos}px`; } catch (e) {}
       } catch (e) {
@@ -195,11 +210,25 @@ const CardArc = ({ onCardClick, fadeStart = 300, fadeEnd = 50 }) => {
     let timeoutId = null;
     const DEBUG = false; // set to true to enable console.debug of measurements
 
+    // rate-limit updates to avoid layout thrash during fast scroll
+    let lastMeasureTs = 0;
+    let lastOffset = null;
+    const MIN_INTERVAL = 100; // ms
     const setVar = (v) => {
       try {
+        // only apply if changed meaningfully to avoid forcing paints
+        if (lastOffset !== null && Math.abs(lastOffset - v) <= 1) return;
+        const now = Date.now();
+        if (now - lastMeasureTs < MIN_INTERVAL) {
+          // skip update; will be picked up on next allowed frame
+          lastOffset = v;
+          return;
+        }
         document.documentElement.style.setProperty('--panel-offset-from-logo', `${v}px`);
         // also set a measured gap var (logo bottom -> info panel top)
         document.documentElement.style.setProperty('--logo-to-panel-gap', `${Math.max(0, v)}px`);
+        lastMeasureTs = now;
+        lastOffset = v;
       } catch (e) {
         // ignore
       }
