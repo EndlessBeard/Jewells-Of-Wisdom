@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import './Toolbar.css';
-import backgrounds from '../assets/backgrounds';
+import b19 from '../assets/backgrounds/19.png';
 import defaultBg from '../assets/background.png';
 import pkg from '../../package.json';
 
@@ -104,12 +104,15 @@ const Toolbar = () => {
   // Hydrate state and CSS vars from localStorage on mount
   useEffect(() => {
     try {
+      // Hard-code background #19 as the site default and persist unless user has explicitly set another
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         document.documentElement.style.setProperty('--page-bg', `url('${saved}')`);
         setCurrentBg(saved);
       } else {
-        document.documentElement.style.setProperty('--page-bg', `url('${defaultBg}')`);
+        // use background 19 by default
+        document.documentElement.style.setProperty('--page-bg', `url('${b19}')`);
+        try { if (!localStorage.getItem(STORAGE_KEY)) localStorage.setItem(STORAGE_KEY, b19); } catch {}
       }
     } catch {}
 
@@ -311,34 +314,7 @@ const Toolbar = () => {
           {open && (
             <div className="toolbar-dropdown" role="menu" aria-label="Toolbar controls">
 
-              {/* Backgrounds */}
-              <div className="dropdown-section">
-                <button className="collapsible-header" onClick={() => setBgOpen(v => !v)} aria-expanded={bgOpen}>
-                  <div className="dropdown-title">Backgrounds</div>
-                  <div className={`chev ${bgOpen ? 'open' : ''}`} aria-hidden="true" />
-                </button>
-                <div className={`collapsible-content ${bgOpen ? 'open' : ''}`}>
-                  <div className="bg-dropdown-row">
-                    <select value={currentBg || ''} onChange={(e) => selectBackground(e.target.value || defaultBg)}>
-                      <option value="">Default</option>
-                      {backgrounds.map(bg => <option key={bg.id} value={bg.src}>{bg.name}</option>)}
-                    </select>
-                  </div>
-                  <div className="bg-scale-row">
-                    <label>Scale:</label>
-                    {[1,2,4].map(s => (
-                      <button
-                        key={s}
-                        className={`scale-btn ${String(s) === (localStorage.getItem(BG_SCALE_KEY) || '1') ? 'active' : ''}`}
-                        onClick={() => {
-                          try { document.documentElement.style.setProperty('--page-bg-scale', String(s)); } catch {}
-                          try { localStorage.setItem(BG_SCALE_KEY, String(s)); } catch {}
-                        }}
-                      >{s}x</button>
-                    ))}
-                  </div>
-                </div>
-              </div>
+              {/* Backgrounds removed — background #19 is hard-coded */}
 
               {/* Panel colors */}
               <div className="dropdown-section">
