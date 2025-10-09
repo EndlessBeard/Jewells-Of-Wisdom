@@ -6,17 +6,12 @@ import InfoPanel from './components/InfoPanel';
 
 function App() {
   const [selectedCard, setSelectedCard] = useState(null);
-  const [TestCardArc, setTestCardArc] = useState(null);
-
-  useEffect(() => {
-    // Only load dev-only test page in non-production and only when the path matches
-    if (process.env.NODE_ENV !== 'production' && typeof window !== 'undefined' && window.location.pathname === '/__cardarc_test') {
-      // dynamic import keeps this out of production bundles
-      import('./components/TestCardArc').then(mod => setTestCardArc(() => mod.default)).catch(() => {
-        // ignore failures in case the file is absent
-      });
-    }
-  }, []);
+  const [showCardArc, setShowCardArc] = useState(() => {
+    try { const v = localStorage.getItem('jow.ui.showCardArc'); return v == null ? true : v === 'true'; } catch { return true; }
+  });
+  const [showInfoPanel, setShowInfoPanel] = useState(() => {
+    try { const v = localStorage.getItem('jow.ui.showInfoPanel'); return v == null ? true : v === 'true'; } catch { return true; }
+  });
 
   useEffect(() => {
     // dev-only debug outlines toggle via pressing 'd'
@@ -100,16 +95,19 @@ function App() {
       if (overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay);
     };
   }, []);
-
-  if (TestCardArc) {
-    return <TestCardArc />;
-  }
-
+  useEffect(() => {
+    const handler = () => {
+      try { setShowCardArc(localStorage.getItem('jow.ui.showCardArc') !== 'false'); } catch { setShowCardArc(true); }
+      try { setShowInfoPanel(localStorage.getItem('jow.ui.showInfoPanel') !== 'false'); } catch { setShowInfoPanel(true); }
+    };
+    window.addEventListener('layout:update', handler);
+    return () => window.removeEventListener('layout:update', handler);
+  }, []);
   return (
     <>
       <Toolbar />
-      <CardArc onCardClick={(i) => setSelectedCard(i)} />
-      <InfoPanel selectedCard={selectedCard} />
+      {showCardArc && <CardArc onCardClick={(i) => setSelectedCard(i)} />}
+      {showInfoPanel && <InfoPanel selectedCard={selectedCard} />}
     </>
   );
 }

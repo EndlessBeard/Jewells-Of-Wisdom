@@ -7,7 +7,7 @@ This document describes how the CardArc component positions and scales the cards
 CardArc arranges a set of cards along an arc (half-ellipse) and places a circular logo anchored above the arc. The layout is computed from viewport dimensions and a small set of designer-tunable percentages. There are two cooperating parts:
 
 - `computeCardLayout(viewW, viewH, opts)` — pure utility that computes pixel metrics (card width/height, radii, wrapper size, logo size) from viewport dimensions and percentage inputs.
-- `CardArc.jsx` (and `TestCardArc.jsx`) — consumes the computed metrics, measures the wrapper DOM, and places the cards and the logo using absolute positioning inside a center wrapper.
+- `CardArc.jsx` — consumes the computed metrics, measures the wrapper DOM, and places the cards and the logo using absolute positioning inside a center wrapper.
 
 The runtime supports live adjustments via toolbar controls that write CSS variables on `:root` and dispatch a `layout:update` event so the UI updates immediately.
 
@@ -124,7 +124,7 @@ Notes:
 - When a toolbar control changes a layout variable, it dispatches two events:
   - `window.dispatchEvent(new Event('resize'))` (legacy compatibility)
   - `window.dispatchEvent(new CustomEvent('layout:update'))` (explicit, fast update)
-- `CardArc` and `TestCardArc` listen for `layout:update` and re-run the wrapper measurement + recompute layout to update positions in real-time.
+- `CardArc` listens for `layout:update` and re-runs the wrapper measurement + recomputes layout to update positions in real-time.
 - Debug visuals: `:root.debug-outlines` (enabled by test page) shows bright outlines for quick visual debugging.
 
 ---
@@ -166,7 +166,7 @@ Legacy vars (still supported): `--base-logo-base-multiplier`, `--base-logo-gap`,
 
 - `computeCardLayout` is the authoritative place for layout math. Keep it pure and deterministic (inputs -> outputs).
 - When adding new percent controls, ensure they are persisted to `localStorage` and exposed as `--layout-*` CSS vars so the util can read them.
-- When changing the concept of vertical anchoring (e.g., attach to a different element than the toolbar), update both CardArc and TestCardArc measurement logic to keep them in sync.
+- When changing the concept of vertical anchoring (e.g., attach to a different element than the toolbar), update the CardArc measurement logic to keep layout consistent.
 
 ---
 

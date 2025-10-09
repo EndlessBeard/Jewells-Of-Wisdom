@@ -73,17 +73,7 @@ const mapping = {
     return '';
   },
   'jow.desiredLogoPanelPadding': (v) => `--desired-logo-panel-padding: ${v};`,
-  'jow.cardShadow': (v) => {
-    const obj = tryParseJSON(v);
-    if (typeof obj === 'object') {
-      const lines = [];
-      if (obj.offset != null) lines.push(`--card-shadow-offset: ${obj.offset}px;`);
-      if (obj.blur != null) lines.push(`--card-shadow-blur: ${obj.blur}px;`);
-      if (obj.opacity != null) lines.push(`--card-shadow-opacity: ${obj.opacity};`);
-      return lines.join('\n');
-    }
-    return '';
-  }
+  // card-shadow mapping removed
 };
 
 Object.keys(data).forEach(k => {

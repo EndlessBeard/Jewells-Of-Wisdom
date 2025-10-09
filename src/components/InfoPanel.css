@@ -1,6 +1,6 @@
 .cat-btn {
-  /* reduced padding (approx 34% of previous) */
-  padding: 0.2rem 0.17rem;
+  /* padding removed */
+  padding: 0;
   border-radius: 8px;
   border: 1px solid rgba(0,0,0,0.06);
   background: linear-gradient(180deg,#fff,#f7f7f7);
@@ -10,10 +10,10 @@
   color: var(--panel-bg-shop-btn-color, #111);
 }
 .info-panel {
-  max-width: 1280px;
-  /* Apply a top offset so the info panel stays below the logo. Uses --panel-offset-from-logo set by CardArc.js when available. */
-  margin: calc(var(--panel-offset-from-logo, 0px) + 0rem) auto 6rem auto;
-  padding: var(--canvas-side-gap, .2rem);
+  /* alignment/gap/padding removed; neutral container */
+  max-width: none;
+  margin: 0;
+  padding: 0;
   box-sizing: border-box;
   /* use the parent panel variable so the toolbar 'Parent panel' control affects this container
      This allows the UI element shown in devtools as `section.info-panel.panel` to reflect the color */
@@ -21,8 +21,8 @@
   border-radius: 12px;
   box-shadow: 0 6px 24px rgba(0,0,0,0.06);
 
-  position: relative;  /* required for z-index to take effect */
-  z-index: 300;         /* above logo (200), below toolbar (1000) */
+  position: static;
+  z-index: auto;
 
 }
 .info-panel-inner {
@@ -37,16 +37,18 @@
 }
 
 .info-section {
-  scroll-margin-top: 76px; /* ensure section is visible below the toolbar when scrolled into view */
-  padding: 1rem 0;
+  /* neutral section spacing */
+  scroll-margin-top: 0;
+  padding: 0;
 }
 
 /* Match panels to the CardArc's inner canvas width so they visually align */
 .panel {
-  max-width: var(--canvas-max-width, 520px); /* same as .card-arc-center-wrapper max-width */
-  width: 100%; /* same responsive width calc used in CardArc */
-  margin: 0 auto; /* center within the info-panel canvas */
-  padding: .1rem; /* small inner padding to match arc canvas */
+  /* neutral panel layout */
+  max-width: none;
+  width: auto;
+  margin: 0;
+  padding: 0;
   box-sizing: border-box;
   /* use per-section CSS variable when available, fallback to default gradient */
   background: var(--panel-bg, linear-gradient(180deg, #fff, #fbfbfb));
@@ -57,10 +59,9 @@
 /* Keep the stage in normal flow and give panels a max-height so they don't push other elements
    Panels will scroll internally when their content exceeds the max height. */
 .panel-stage {
-  min-height: 320px; /* reserve vertical space to avoid layout shift */
-  padding: 0.5rem 0;
-  /* Also allow the stage to shift using a transform tied to the same var if needed */
-  transform: translateY(calc(var(--panel-offset-from-logo, 0px) * 0px));
+  /* neutral stage spacing */
+  min-height: 0;
+  padding: 0;
 }
 .panel-scrollable {
   max-height: 360px;
@@ -69,8 +70,8 @@
 
 /* Visual separators between consecutive paragraphs (aspects) in About Us */
 .panel#about-us p {
-  margin: 0; /* we'll control spacing via padding so dividers align cleanly */
-  padding: 0.75rem 0;
+  margin: 0;
+  padding: 0;
 }
 .panel#about-us p + p {
   border-top: 1px solid rgba(0,0,0,0.06);
@@ -85,7 +86,7 @@
 /* Same subtle separators for Author panel */
 .panel#author p {
   margin: 0;
-  padding: 0.6rem 0;
+  padding: 0;
 }
 .panel#author p + p {
   border-top: 1px solid rgba(0,0,0,0.06);
@@ -100,7 +101,7 @@
 /* Same subtle separators for Services panel */
 .panel#services p {
   margin: 0;
-  padding: 0.6rem 0;
+  padding: 0;
 }
 
 /* Per-section background variables (if set). These fall back to the general --panel-bg or default gradient. */
@@ -121,17 +122,17 @@
 
 /* Subscriptions: tier and item styling */
 .subscription-tier {
-  padding: 0.75rem 0 0.25rem 0;
-  border-top: 2px solid rgba(0,0,0,0.08); /* thicker separator between tiers */
+  padding: 0;
+  border-top: none;
 }
 .subscription-tier:first-of-type {
   border-top: none;
 }
 .tier-title {
-  margin: 0.25rem 0 0.5rem 0;
+  margin: 0;
   font-size: 1rem;
   font-weight: 700;
-  text-decoration: underline;
+  text-decoration: none;
 }
 .tier-items {
   display: flex;
@@ -142,15 +143,15 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.5rem 0;
-  border-bottom: 1px solid rgba(0,0,0,0.04); /* thin row divider */
+  padding: 0;
+  border-bottom: none;
 }
 .tier-row:last-child {
   border-bottom: none;
 }
 .tier-desc {
   flex: 1 1 auto;
-  padding-right: 0.75rem;
+  padding-right: 0;
 }
 .tier-desc strong {
   display: block;
@@ -164,12 +165,12 @@
   flex: 0 0 auto;
 }
 .value-box {
-  background: linear-gradient(180deg, #fff, #f7f7f7);
-  border: 1px solid rgba(0,0,0,0.06);
-  padding: 0.45rem 0.7rem;
-  border-radius: 8px;
-  font-weight: 800;
-  text-decoration: underline;
+  background: transparent;
+  border: none;
+  padding: 0;
+  border-radius: 0;
+  font-weight: 400;
+  text-decoration: none;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -192,11 +193,11 @@
 /* Shop carousels */
 /* Shop removed — placeholder styling for the Store panel */
 .panel#shop {
-  /* Keep consistent with other panels: centered, constrained width */
-  max-width: var(--canvas-max-width, 520px);
-  width: 100%;
-  margin: 0 auto;
-  padding: .6rem 0.1rem;
+  /* neutral shop panel layout */
+  max-width: none;
+  width: auto;
+  margin: 0;
+  padding: 0;
   box-sizing: border-box;
 }
 
@@ -204,14 +205,12 @@
 
 /* Shop categories container: 2x2 grid with small gaps and optional border controlled via --panel-bg-shop-border */
 .shop-categories {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 5px; /* requested 5px spacing between category buttons */
-  padding: 5px; /* small padding inside the bordered container */
-  border-radius: 8px;
-  /* container border uses shop-border color and an outline-width var if provided */
-  border: var(--panel-bg-shop-outline-width, 1px) solid var(--panel-bg-shop-border, rgba(0,0,0,0.06));
-  background-clip: padding-box;
+  display: block;
+  gap: 0;
+  padding: 0;
+  border-radius: 0;
+  border: none;
+  background-clip: unset;
 }
 
 .shop-categories button[data-cat="books"] { background: var(--panel-bg-shop-cat-books, linear-gradient(180deg,#fff,#f7f7f7)); }
@@ -241,8 +240,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0.35rem; /* make the clickable area larger and show bg */
-  border-radius: 6px;
+  padding: 0;
+  border-radius: 0;
   background: transparent;
   border: none;
 }
@@ -255,7 +254,7 @@
 
 /* Make carousel wrapper visibly padded for testing */
 .shop-carousel {
-  padding: 10px;
+  padding: 0;
   box-sizing: border-box;
 }
 

@@ -127,47 +127,7 @@ const CardArc = ({ onCardClick, fadeStart = 300, fadeEnd = 50 }) => {
       const layout = computeCardLayout(window.innerWidth, window.innerHeight, { maxCanvasWidth: 900 });
       // prefer the wrapper width but trust computeCardLayout's wrapperW for consistent scaling
       const wrapperH = layout.wrapperH;
-      // position wrapper vertically: center in the area below the toolbar so cards remain on screen
-      try {
-        const toolbarEl = document.querySelector('.toolbar');
-        const toolbarBottom = toolbarEl ? Math.round(toolbarEl.getBoundingClientRect().bottom) : 0;
-        // Read tunable spacing vars from :root so designers can adjust without code edits
-        const rootComputed = getComputedStyle(document.documentElement);
-        const parseNum = (s, fallback) => {
-          if (!s) return fallback;
-          const p = parseFloat(s);
-          return Number.isFinite(p) ? p : fallback;
-        };
-        const bottomPadding = parseNum(rootComputed.getPropertyValue('--cardarc-bottom-padding'), 12);
-        const availableH = Math.max(0, window.innerHeight - toolbarBottom - bottomPadding);
-        // center the wrapper in availableH, but clamp so it stays visible
-    // Read toolbar gap: prefer percent-based var (percent of viewport height), fall back to legacy px var
-  const toolbarGapPercent = parseNum(rootComputed.getPropertyValue('--layout-toolbar-gap-percent'), null);
-  const legacyPxGap = parseNum(rootComputed.getPropertyValue('--cardarc-toolbar-gap'), 8);
-  // For consistent visual spacing across resolutions, compute gap relative to the
-  // measured CardArc wrapper height instead of the viewport height. This keeps
-  // the gap proportional to the arc's size (cards/wrapper) so it looks similar
-  // on phones, tablets, and desktops.
-  let gapPx;
-  if (toolbarGapPercent != null && !Number.isNaN(toolbarGapPercent)) {
-    // Use wrapperH as the sizing basis; fallback to viewport height if wrapperH is missing
-    const basis = wrapperH && wrapperH > 0 ? wrapperH : window.innerHeight;
-    gapPx = Math.round((toolbarGapPercent / 100) * basis);
-  } else {
-    gapPx = legacyPxGap;
-  }
-
-  // Place the wrapper exactly `gapPx` below the toolbar (consistent gap).
-  let topPos = toolbarBottom + gapPx;
-  // clamp so the wrapper doesn't overflow the bottom of the viewport; preserve at least toolbarBottom+gapPx where possible
-  if (topPos + wrapperH > window.innerHeight - bottomPadding) {
-    topPos = Math.max(toolbarBottom + gapPx, window.innerHeight - bottomPadding - wrapperH);
-  }
-        // apply top position to wrapper element
-        try { el.style.top = `${topPos}px`; } catch (e) {}
-      } catch (e) {
-        /* ignore positioning failures */
-      }
+      // Positioning is handled by CSS flow; do not mutate element.style.top here.
       setWrapperSize({ width: rect.width || layout.wrapperW, height: wrapperH });
     };
 
@@ -204,103 +164,7 @@ const CardArc = ({ onCardClick, fadeStart = 300, fadeEnd = 50 }) => {
   }, []);
 
   // Measure the rendered Logo element and publish a CSS variable so InfoPanel can avoid overlap.
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    let raf = null;
-    let timeoutId = null;
-    const DEBUG = false; // set to true to enable console.debug of measurements
-
-    // rate-limit updates to avoid layout thrash during fast scroll
-    let lastMeasureTs = 0;
-    let lastOffset = null;
-    const MIN_INTERVAL = 100; // ms
-    const setVar = (v) => {
-      try {
-        // only apply if changed meaningfully to avoid forcing paints
-        if (lastOffset !== null && Math.abs(lastOffset - v) <= 1) return;
-        const now = Date.now();
-        if (now - lastMeasureTs < MIN_INTERVAL) {
-          // skip update; will be picked up on next allowed frame
-          lastOffset = v;
-          return;
-        }
-        document.documentElement.style.setProperty('--panel-offset-from-logo', `${v}px`);
-        // also set a measured gap var (logo bottom -> info panel top)
-        document.documentElement.style.setProperty('--logo-to-panel-gap', `${Math.max(0, v)}px`);
-        lastMeasureTs = now;
-        lastOffset = v;
-      } catch (e) {
-        // ignore
-      }
-    };
-
-    const measureLogo = () => {
-      const logoEl = logoRef.current;
-      const infoEl = document.querySelector('.info-panel');
-      if (!logoEl) {
-        if (DEBUG) console.debug('measureLogo: no logoEl');
-        return setVar(0);
-      }
-      const logoRect = logoEl.getBoundingClientRect();
-      const padding = 12; // px of breathing room
-
-      // If we can find the info panel, compute precise gap from logo bottom to info panel top
-      if (infoEl) {
-          const infoRect = infoEl.getBoundingClientRect();
-          const gap = infoRect.top - logoRect.bottom;
-          const measuredGap = Math.max(0, Math.round(gap));
-          // Read desired padding from a CSS var so designers can tune without code edits
-          const rootComputed = getComputedStyle(document.documentElement);
-          const desiredStr = rootComputed.getPropertyValue('--desired-logo-panel-padding');
-          let desiredPadding = 24; // default px
-          if (desiredStr) {
-            const parsed = parseFloat(desiredStr);
-            if (Number.isFinite(parsed)) desiredPadding = parsed;
-          }
-          // Compute new offset so InfoPanel will be positioned at logo bottom + desiredPadding
-          const offset = Math.max(0, Math.round(logoRect.bottom + desiredPadding));
-          if (DEBUG) console.debug('measureLogo:', { logoRect, infoRect, gap, measuredGap, desiredPadding, offset });
-          try {
-            // set panel offset to logo bottom + desired padding
-            document.documentElement.style.setProperty('--panel-offset-from-logo', `${offset}px`);
-            // expose both the actual measured gap and the desired gap
-            document.documentElement.style.setProperty('--logo-to-panel-gap', `${measuredGap}px`);
-            document.documentElement.style.setProperty('--logo-to-panel-desired-gap', `${Math.round(desiredPadding)}px`);
-          } catch (e) {
-            /* ignore */
-          }
-        return;
-      }
-
-      // fallback: no info panel found; use logo bottom + padding
-      const offset = Math.max(0, Math.round(logoRect.bottom + padding));
-      if (DEBUG) console.debug('measureLogo fallback:', { logoRect, offset });
-      setVar(offset);
-    };
-
-    const onResizeOrScroll = () => {
-      if (raf != null) return;
-      raf = requestAnimationFrame(() => {
-        measureLogo();
-        raf = null;
-      });
-    };
-
-    // initial measure after a short delay to allow layout to settle
-    timeoutId = setTimeout(() => {
-      measureLogo();
-    }, 80);
-
-    window.addEventListener('resize', onResizeOrScroll);
-    window.addEventListener('scroll', onResizeOrScroll, { passive: true });
-
-    return () => {
-      if (raf) cancelAnimationFrame(raf);
-      clearTimeout(timeoutId);
-      window.removeEventListener('resize', onResizeOrScroll);
-      window.removeEventListener('scroll', onResizeOrScroll);
-    };
-  }, []);
+  // Logo measurement and info-panel overlap management removed.
 
   // Fade / scroll-driven visual calculations
   useEffect(() => {
@@ -408,43 +272,25 @@ const CardArc = ({ onCardClick, fadeStart = 300, fadeEnd = 50 }) => {
     if (onCardClick) onCardClick(idx);
   };
 
+  // Render logo at the top and arc container below it. Cards are absolutely positioned inside the arc container.
   return (
     <div className="card-arc-container">
       <div className="card-arc-center-wrapper" ref={wrapperRef}>
-        {/* Temporary circular logo centered on the same anchor as the arc */}
+        {/* Logo row: centered at top */}
         {(() => {
           const el = wrapperRef.current;
           const metrics = (el && el.__cardMetrics) || {};
-          const rY = metrics.radiusY || BASE_RADIUS_Y;
-          const cardH = metrics.cardH || BASE_CARD_HEIGHT;
           const scale = metrics.scale || (metrics.cardW ? metrics.cardW / BASE_CARD_WIDTH : 1);
-
-          // compute initial logo position relative to wrapper center using percent-driven vars
+          // compute logo width/height: prefer measured logoW/logoH, fallback to multiplier
           const gv2 = getLogoVars();
           const BASE_LOGO_BASE_MULTIPLIER = (gv2.baseMultiplierPercent != null) ? (gv2.baseMultiplierPercent / 100) : gv2.baseMultiplier;
-          // Treat gapPercent as a percentage of the viewport height so vertical
-          // spacing behaves like other vertical padding controls (logoPaddingPercent)
-          const gapPx2 = (gv2.gapPercent != null && !Number.isNaN(gv2.gapPercent)) ? (gv2.gapPercent / 100) * window.innerHeight : gv2.gapLegacyPx;
-          const yAdjustPx2 = (gv2.yAdjustPercent != null && !Number.isNaN(gv2.yAdjustPercent)) ? (gv2.yAdjustPercent / 100) * cardH : 0;
-          const logoY2 = - (rY + cardH / 2 + gapPx2 * scale) + yAdjustPx2 * scale;
-          // compute logo width/height: prefer percent-driven logoW/logoH, fallback to multiplier
           const logoW = (metrics && metrics.logoW) ? metrics.logoW : ((metrics && metrics.cardW) ? Math.round(metrics.cardW * BASE_LOGO_BASE_MULTIPLIER) : Math.round(BASE_CARD_WIDTH * BASE_LOGO_BASE_MULTIPLIER * scale));
           const logoH = (metrics && metrics.logoH) ? metrics.logoH : logoW;
 
-          // place logo relative to wrapper center like cards
-          const leftFromCenter = (wrapperSize.width || metrics.wrapperW) / 2 - logoW / 2;
-          const topFromCenter = logoY2 + (wrapperSize.height || metrics.wrapperH) / 2 - logoH / 2;
-
-          // compose transform: apply translateY (computed from scroll) and scale (computed from scroll)
           const transform = `translateY(${logoVisual.translateY}px) scale(${logoVisual.scale})`;
-
-          const logoStyle = {
-            position: 'absolute',
-            left: `${leftFromCenter}px`,
-            top: `${topFromCenter}px`,
+          const logoStyleInner = {
             width: `${logoW}px`,
             height: `${logoH}px`,
-            zIndex: 0,
             opacity: logoVisual.opacity,
             transform,
             transformOrigin: 'center center',
@@ -452,12 +298,16 @@ const CardArc = ({ onCardClick, fadeStart = 300, fadeEnd = 50 }) => {
             transition: 'transform 220ms linear, opacity 220ms linear',
           };
 
-          // Optional debug: set DEBUG to true to add a visible outline class on the logo
-          // and print computed style info to the console for diagnosing stacking contexts.
           const DEBUG = false;
-
-          return <Logo style={logoStyle} label="JW" ref={logoRef} className={DEBUG ? 'debug-temp-logo' : ''} />;
+          return (
+            <div className={`card-arc-logo ${DEBUG ? 'debug-temp-logo' : ''}`} ref={logoRef}>
+              <Logo style={logoStyleInner} label="JW" />
+            </div>
+          );
         })()}
+
+        {/* Arc container: cards positioned inside here */}
+        <div className="card-arc-arc" style={{ position: 'relative', width: '100%', height: `${(wrapperRef.current && wrapperRef.current.__cardMetrics ? wrapperRef.current.__cardMetrics.wrapperH : wrapperSize.height) || WRAPPER_HEIGHT}px` }}>
         {CARD_DATA.map((card, i) => {
           // Distribute cards from 180deg (left) to 0deg (right) in equal steps
           const total = CARD_DATA.length - 1;
@@ -500,6 +350,7 @@ const CardArc = ({ onCardClick, fadeStart = 300, fadeEnd = 50 }) => {
             />
           );
         })}
+        </div>
       </div>
     </div>
   );

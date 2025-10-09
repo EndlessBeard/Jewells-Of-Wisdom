@@ -13,6 +13,7 @@ const LAYOUT_KEYS = {
   logoPaddingPercent: 'jow.layout.logoPaddingPercent',
   edgePaddingPercent: 'jow.layout.edgePaddingPercent',
   toolbarGapPercent: 'jow.layout.toolbarGapPercent',
+  logoPanelPaddingPercent: 'jow.layout.logoPanelPaddingPercent',
   bottomPadding: 'jow.layout.bottomPadding',
 };
 
@@ -35,25 +36,20 @@ const Toolbar = () => {
   const [logoOpen, setLogoOpen] = useState(false);
   const [toolbarOpen, setToolbarOpen] = useState(false);
   const [cardOpen, setCardOpen] = useState(false);
-  const [effectsOpen, setEffectsOpen] = useState(false);
+  // effects UI removed
 
   const [currentBg, setCurrentBg] = useState(null);
   const [panelColors, setPanelColors] = useState({});
   const [logoSettings, setLogoSettings] = useState({
     baseSize: 120, verticalOffset: 0, innerScale: 1, baseMultiplier: 1.3, gap: -420, yAdjust: 0
   });
-  const [toolbarGap, setToolbarGap] = useState(() => {
-    try {
-      const v = localStorage.getItem(LAYOUT_KEYS.toolbarGapPercent);
-      return v != null ? parseFloat(v) : parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--layout-toolbar-gap-percent') || '1');
-    } catch (e) { return parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--layout-toolbar-gap-percent') || '1'); }
+
+  // visibility controls (persisted)
+  const [showCardArc, setShowCardArc] = useState(() => {
+    try { const v = localStorage.getItem('jow.ui.showCardArc'); return v == null ? true : v === 'true'; } catch { return true; }
   });
-  const [bottomPad, setBottomPad] = useState(() => {
-    try {
-      const v = localStorage.getItem(LAYOUT_KEYS.bottomPadding);
-      if (v != null) return parseFloat(v);
-      return parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--cardarc-bottom-padding') || '12');
-    } catch (e) { return parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--cardarc-bottom-padding') || '12'); }
+  const [showInfoPanel, setShowInfoPanel] = useState(() => {
+    try { const v = localStorage.getItem('jow.ui.showInfoPanel'); return v == null ? true : v === 'true'; } catch { return true; }
   });
 
   const menuRef = useRef(null);
@@ -245,60 +241,17 @@ const Toolbar = () => {
     if (typeof next.gap === 'number') try { document.documentElement.style.setProperty('--base-logo-gap', `${next.gap}px`); } catch {}
     if (typeof next.yAdjust === 'number') try { document.documentElement.style.setProperty('--base-logo-y-adjust', `${next.yAdjust}px`); } catch {}
   };
+  
 
-  const setDesiredLogoPanelPadding = (v) => {
-    try {
-      const num = Number.isFinite(Number(v)) ? Number(v) : parseFloat(v);
-      if (!Number.isFinite(num)) return;
-      document.documentElement.style.setProperty('--desired-logo-panel-padding', String(num));
-      localStorage.setItem('jow.desiredLogoPanelPadding', String(num));
-    } catch (e) {}
-  };
-
-  const setToolbarGapPercent = (p) => {
-    const asString = String(p);
-    try { document.documentElement.style.setProperty('--layout-toolbar-gap-percent', asString); } catch {}
-    // px fallback for older consumers: compute px from viewport height
-    try {
-      const px = Math.round((Number(p) / 100) * window.innerHeight);
-      document.documentElement.style.setProperty('--cardarc-toolbar-gap', `${px}`);
-    } catch {}
-    try { localStorage.setItem(LAYOUT_KEYS.toolbarGapPercent, asString); } catch {}
+  const toggleShowCardArc = (v) => {
+    try { localStorage.setItem('jow.ui.showCardArc', String(v)); } catch {}
+    setShowCardArc(v);
     try { window.dispatchEvent(new CustomEvent('layout:update')); } catch {}
   };
 
-  const setCardPercent = (p) => {
-    const asString = String(p);
-    try { document.documentElement.style.setProperty('--layout-card-percent', asString); } catch {}
-    try { localStorage.setItem(LAYOUT_KEYS.cardPercent, asString); } catch {}
-    try { window.dispatchEvent(new CustomEvent('layout:update')); } catch {}
-  };
-
-  const setLogoPercent = (p) => {
-    const asString = String(p);
-    try { document.documentElement.style.setProperty('--layout-logo-percent', asString); } catch {}
-    try { localStorage.setItem(LAYOUT_KEYS.logoPercent, asString); } catch {}
-    try { window.dispatchEvent(new CustomEvent('layout:update')); } catch {}
-  };
-
-  const setLogoPaddingPercent = (p) => {
-    const asString = String(p);
-    try { document.documentElement.style.setProperty('--layout-logo-padding-percent', asString); } catch {}
-    try { localStorage.setItem(LAYOUT_KEYS.logoPaddingPercent, asString); } catch {}
-    try { window.dispatchEvent(new CustomEvent('layout:update')); } catch {}
-  };
-
-  const setEdgePaddingPercent = (p) => {
-    const asString = String(p);
-    try { document.documentElement.style.setProperty('--layout-edge-padding-percent', asString); } catch {}
-    try { localStorage.setItem(LAYOUT_KEYS.edgePaddingPercent, asString); } catch {}
-    try { window.dispatchEvent(new CustomEvent('layout:update')); } catch {}
-  };
-
-  const setBottomPadding = (p) => {
-    const asString = String(p);
-    try { document.documentElement.style.setProperty('--cardarc-bottom-padding', asString); } catch {}
-    try { localStorage.setItem(LAYOUT_KEYS.bottomPadding, asString); } catch {}
+  const toggleShowInfoPanel = (v) => {
+    try { localStorage.setItem('jow.ui.showInfoPanel', String(v)); } catch {}
+    setShowInfoPanel(v);
     try { window.dispatchEvent(new CustomEvent('layout:update')); } catch {}
   };
 
@@ -370,48 +323,9 @@ const Toolbar = () => {
                 </div>
               </div>
 
-              {/* Logo controls */}
-              <div className="dropdown-section">
-                <button className="collapsible-header" onClick={() => setLogoOpen(v => !v)} aria-expanded={logoOpen}>
-                  <div className="dropdown-title">Logo</div>
-                  <div className={`chev ${logoOpen ? 'open' : ''}`} aria-hidden="true" />
-                </button>
-                <div className={`collapsible-content ${logoOpen ? 'open' : ''}`}>
-                  <div className="logo-controls-grid">
-                    <div className="logo-control-row">
-                      <span className="logo-control-value">{parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--layout-logo-percent') || '8')}%</span>
-                      <label className="logo-control-label">Logo size (% of viewport width)</label>
-                      <input
-                        type="range" min="4" max="100" step="0.5"
-                        defaultValue={parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--layout-logo-percent') || '8')}
-                        onChange={(e) => setLogoPercent(e.target.value)}
-                      />
-                    </div>
+              {/* Logo controls removed — positioning is handled by CSS and layout code. */}
 
-                    <div className="logo-control-row">
-                      <span className="logo-control-value">{parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--layout-logo-yadjust-percent') || '0')}%</span>
-                      <label className="logo-control-label">Logo Y adjust (% of card height)</label>
-                      <input
-                        type="range" min="-100" max="100" step="1"
-                        defaultValue={parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--layout-logo-yadjust-percent') || '0')}
-                        onChange={(e) => { document.documentElement.style.setProperty('--layout-logo-yadjust-percent', String(e.target.value)); localStorage.setItem('jow.layout.logoYAdjustPercent', String(e.target.value)); try { window.dispatchEvent(new CustomEvent('layout:update')); } catch {} }}
-                      />
-                    </div>
-
-                    <div className="logo-control-row">
-                      <span className="logo-control-value">{parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--layout-logo-padding-percent') || '6')}%</span>
-                      <label className="logo-control-label">Logo padding (% of viewport height)</label>
-                      <input
-                        type="range" min="0" max="100" step="0.5"
-                        defaultValue={parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--layout-logo-padding-percent') || '6')}
-                        onChange={(e) => setLogoPaddingPercent(e.target.value)}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Toolbar controls */}
+              {/* Toolbar visibility toggles (CardArc / InfoPanel) */}
               <div className="dropdown-section">
                 <button className="collapsible-header" onClick={() => setToolbarOpen(v => !v)} aria-expanded={toolbarOpen}>
                   <div className="dropdown-title">Toolbar</div>
@@ -420,77 +334,20 @@ const Toolbar = () => {
                 <div className={`collapsible-content ${toolbarOpen ? 'open' : ''}`}>
                   <div className="toolbar-controls-grid">
                     <label className="toolbar-control-row">
-                      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:'0.5rem'}}>
-                        <span>Toolbar gap (% of viewport height — negative lifts arc)</span>
-                        <div style={{minWidth:'6.5rem',textAlign:'right',fontWeight:700}}>{toolbarGap}% ({Math.round((toolbarGap/100) * window.innerHeight)}px)</div>
-                      </div>
-                      <input
-                        type="range"
-                        min={-100}
-                        max={100}
-                        step={0.25}
-                        value={toolbarGap}
-                        onChange={(e) => {
-                          const v = parseFloat(e.target.value);
-                          setToolbarGap(v);
-                          setToolbarGapPercent(v);
-                        }}
-                      />
+                      <input type="checkbox" checked={showCardArc} onChange={(e) => toggleShowCardArc(e.target.checked)} />
+                      <span style={{marginLeft:'0.5rem'}}>Show Card Arc</span>
                     </label>
                     <label className="toolbar-control-row">
-                      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:'0.5rem'}}>
-                        <span>Bottom padding (px — negative pulls arc lower)</span>
-                        <div style={{minWidth:'6.5rem',textAlign:'right',fontWeight:700}}>{bottomPad}px</div>
-                      </div>
-                      <input
-                        type="range"
-                        min={-50}
-                        max={50}
-                        step={1}
-                        value={bottomPad}
-                        onChange={(e) => {
-                          const v = parseFloat(e.target.value);
-                          setBottomPad(v);
-                          setBottomPadding(v);
-                        }}
-                      />
+                      <input type="checkbox" checked={showInfoPanel} onChange={(e) => toggleShowInfoPanel(e.target.checked)} />
+                      <span style={{marginLeft:'0.5rem'}}>Show Info Panel</span>
                     </label>
                   </div>
                 </div>
               </div>
 
-              {/* Card controls */}
-              <div className="dropdown-section">
-                <button className="collapsible-header" onClick={() => setCardOpen(v => !v)} aria-expanded={cardOpen}>
-                  <div className="dropdown-title">Card</div>
-                  <div className={`chev ${cardOpen ? 'open' : ''}`} aria-hidden="true" />
-                </button>
-                <div className={`collapsible-content ${cardOpen ? 'open' : ''}`}>
-                  <div className="card-controls-grid">
-                    <label>
-                      Card size (% of viewport width)
-                      <input type="range" min="8" max="80" step="0.5" defaultValue={parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--layout-card-percent') || '22')} onChange={(e) => setCardPercent(e.target.value)} />
-                    </label>
-                    <label>
-                      Edge padding (% of viewport width)
-                      <input type="range" min="0" max="12" step="0.25" defaultValue={parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--layout-edge-padding-percent') || '4')} onChange={(e) => setEdgePaddingPercent(e.target.value)} />
-                    </label>
-                  </div>
-                </div>
-              </div>
+              {/* Card controls removed — size and padding are controlled by styles and defaults. */}
 
-              {/* Effects (placeholder) */}
-              <div className="dropdown-section">
-                <button className="collapsible-header" onClick={() => setEffectsOpen(v => !v)} aria-expanded={effectsOpen}>
-                  <div className="dropdown-title">Effects</div>
-                  <div className={`chev ${effectsOpen ? 'open' : ''}`} aria-hidden="true" />
-                </button>
-                <div className={`collapsible-content ${effectsOpen ? 'open' : ''}`}>
-                  <div className="effects-grid">
-                    <label><input type="checkbox" defaultChecked={false} onChange={() => { try { localStorage.setItem('jow.effects.showDropShadow', String(!JSON.parse(localStorage.getItem('jow.effects.showDropShadow') || 'false'))); } catch {} }} /> Drop shadows</label>
-                  </div>
-                </div>
-              </div>
+              {/* Effects menu removed — functionality deprecated */}
 
                 {/* Export / Defaults */}
                 <div className="dropdown-section">

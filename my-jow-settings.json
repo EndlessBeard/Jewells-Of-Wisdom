@@ -4,5 +4,5 @@
   "jow.cardShadow": "{\"offset\":20,\"blur\":15,\"opacity\":0.52}",
   "jow.logoSettings": "{\"baseSize\":10000,\"verticalOffset\":0,\"innerScale\":0.5,\"animation\":false,\"baseMultiplier\":1.64,\"gap\":-451,\"yAdjust\":53}",
   "jow.selectedBackgroundScale": "1",
-  "jow.selectedBackground": "/src/assets/backgrounds/19.png"
+  "jow.selectedBackground": "/assets/19.png"
 }

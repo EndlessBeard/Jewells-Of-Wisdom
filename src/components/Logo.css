@@ -1,25 +1,22 @@
 .temp-logo {
-  position: absolute;
-  left: 50%;
-  top: 50%;
+  /* neutral logo layout: remove absolute positioning and offsets */
+  position: static;
+  left: auto;
+  top: auto;
   transform-origin: center;
   border-radius: 50%;
   background: var(--logo-bg, radial-gradient(135deg,#ffd27a,#ff9a9e));
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  /* Use the same shadow variables as CardArc so the Effects sliders control the logo background shadow.
-    The CSS variables for the card shadow are expected to include units for offset/blur (px)
-    and a unitless opacity. Provide sensible fallbacks. */
-  box-shadow: 0 calc(var(--card-shadow-offset, 8px) * var(--scale,1)) calc(var(--card-shadow-blur, 24px) * var(--scale,1)) rgba(0,0,0,var(--card-shadow-opacity,0.12));
-  z-index: 0; /* positioned below cards */
+  /* drop-shadow removed */
+  box-shadow: none;
+  z-index: auto;
   pointer-events: none;
   overflow: hidden;
-  /* Allow inline styles (px strings) to override; when not set, fall back to CSS vars. */
-  width: var(--temp-logo-width, calc(80px * var(--scale, 1)));
-  height: var(--temp-logo-height, calc(80px * var(--scale, 1)));
-  /* Keep a 1:1 aspect to ensure perfect circle even if widths/heights differ slightly */
-  aspect-ratio: 1 / 1;
+  width: auto;
+  height: auto;
+  aspect-ratio: unset;
   box-sizing: border-box;
 }
 .temp-logo img {
@@ -41,14 +38,13 @@
   --logo-inner-scale: multiplier for inner image (defaults to 1)
 */
 .temp-logo {
-  top: calc(50% + var(--logo-vertical-offset, 0px));
-  /* map base-size into fallback CSS variables used above */
-  --temp-logo-width: calc(var(--logo-base-size, 80px) * var(--scale, 1));
-  --temp-logo-height: calc(var(--logo-base-size, 80px) * var(--scale, 1));
+  /* neutralize legacy vars used for absolute placement */
+  --temp-logo-width: unset;
+  --temp-logo-height: unset;
 }
 .temp-logo img {
-  width: calc(100% * var(--logo-inner-scale, 1));
-  height: calc(100% * var(--logo-inner-scale, 1));
+  width: auto;
+  height: auto;
 }
 
 /* Force logo to be static (no CSS animations or transitions). The project no longer uses

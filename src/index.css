@@ -3,9 +3,9 @@
   line-height: 1.5;
   font-weight: 400;
 
-  /* canvas layout variables used by CardArc and InfoPanel */
-  --canvas-side-gap: .6rem; /* side padding that frames the canvas */
-  --canvas-max-width: 520px; /* inner centered canvas max width for panels/arc */
+  /* canvas layout variables removed (neutralized) */
+  --canvas-side-gap: 0;
+  --canvas-max-width: none;
 
   color-scheme: light dark;
   color: var(--page-text-color, rgba(255, 255, 255, 0.87));
@@ -39,12 +39,12 @@ body {
 /* Page background: centered, tile vertically. Use --page-bg variable so the toolbar menu can switch it. */
 :root {
   --page-bg: url('./assets/background.png');
-  /* per-panel background variables (can be set via toolbar color pickers) */
-  --panel-bg-about-us: ;
-  --panel-bg-author: ;
-  --panel-bg-services: ;
-  --panel-bg-subscriptions: ;
-  --panel-bg-shop: ;
+  /* per-panel background variables removed */
+  --panel-bg-about-us: none;
+  --panel-bg-author: none;
+  --panel-bg-services: none;
+  --panel-bg-subscriptions: none;
+  --panel-bg-shop: none;
 }
 body {
   background-image: var(--page-bg);

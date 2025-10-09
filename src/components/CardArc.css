@@ -1,25 +1,41 @@
 .card-arc-container {
-  position: relative;
+  /* layout rules removed per request — keep a neutral container */
+  position: static;
   width: 100%;
-  max-width: 1280px; /* align with #root */
-  min-height: var(--wrapper-h, 0px); /* allow container to grow and keep document flow for scrolling */
-  margin: 0px auto 0 auto; /* center container within canvas */
   box-sizing: border-box;
-  padding: 0 var(--canvas-side-gap, 2rem); /* match app canvas side gap */
+  margin: 0;
+  padding: 0;
+  min-height: auto;
   pointer-events: none;
 }
 .card-arc-center-wrapper {
-  position: absolute;
-  left: 50%;
-  top: 200px;
-  transform: translate(-50%);
-  width: calc(100% - (var(--canvas-side-gap, 2rem) * 2));
-  max-width: var(--canvas-max-width, 520px);
-  height: var(--wrapper-h, 320px);
+  /* neutral flow: remove centering/width/height rules used for alignment */
+  position: static;
+  margin: 0;
+  width: 100%;
+  max-width: none;
+  height: auto;
+}
+
+.card-arc-logo {
+  /* logo alignment/gap removed; provide a neutral block for logo insertion */
+  display: block;
+  width: 100%;
+  padding: 0;
+  text-align: center; /* keep visual centering of inline content only */
+  pointer-events: none;
+  z-index: 0;
+}
+
+.card-arc-arc {
+  width: 100%;
+  position: static; /* remove positioning context so layout is flow-based */
+  box-sizing: border-box;
 }
 .card-arc-card {
-  width: var(--card-w, 120px);
-  height: var(--card-h, 180px);
+  /* removed explicit card width/height to avoid JS-driven alignment dependency */
+  width: auto;
+  height: auto;
   perspective: 800px;
   pointer-events: auto;
   cursor: pointer;
@@ -48,13 +64,8 @@
   justify-content: center;
   font-size: calc(1.1rem * var(--scale, 1));
   border-radius: calc(16px * var(--scale, 1));
-  /* card shadow variables are expected to be set on :root by the Toolbar.
-    Fallback values are provided here (include units where appropriate).
-    --card-shadow-offset: distance in px (default 8px)
-    --card-shadow-blur: blur radius in px (default 20px)
-    --card-shadow-opacity: opacity 0..1 (default 0.08)
-  */
-  box-shadow: 0 calc(var(--card-shadow-offset, 8px) * var(--scale,1)) calc(var(--card-shadow-blur, 20px) * var(--scale,1)) rgba(0,0,0,var(--card-shadow-opacity,0.08));
+  /* drop-shadow variables removed — use a subtle default or none */
+  box-shadow: none;
   background: #f7f7f7;
 }
 .card-arc-back {

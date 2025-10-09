@@ -2,15 +2,14 @@
 :root {
   /* Permanently default to background #19 for deploys */
   /* Use the built asset path under /assets so the file is found after build */
-  --page-bg: url('/assets/background-CCriZYR-.png');
+  --page-bg: url('/assets/19.png');
   --page-bg-scale: 1;
   --panel-bg: linear-gradient(180deg,#fff,#fbfbfb);
   --toolbar-bg: #ffffff;
   --logo-bg: radial-gradient(135deg,#ffd27a,#ff9a9e);
-  --desired-logo-panel-padding: 24;
-  --card-shadow-offset: 8px;
-  --card-shadow-blur: 20px;
-  --card-shadow-opacity: 0.08;
+  /* logo→panel padding neutralized */
+  --desired-logo-panel-padding: 0;
+  /* card shadow variables removed */
   /* toolbar/menu and shop button text color defaults */
   --toolbar-dropdown-title-color: #111;
   --panel-bg-shop-btn-color: #111;
