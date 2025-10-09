@@ -1,7 +1,8 @@
 /* Project default CSS variable placeholders. These will be overridden by generated-defaults.css if present. */
 :root {
   /* Permanently default to background #19 for deploys */
-  --page-bg: url('/src/assets/backgrounds/19.png');
+  /* Use the built asset path under /assets so the file is found after build */
+  --page-bg: url('/assets/background-CCriZYR-.png');
   --page-bg-scale: 1;
   --panel-bg: linear-gradient(180deg,#fff,#fbfbfb);
   --toolbar-bg: #ffffff;
