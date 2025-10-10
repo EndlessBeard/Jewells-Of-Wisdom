@@ -284,8 +284,15 @@ const CardArc = ({ onCardClick, fadeStart = 300, fadeEnd = 50 }) => {
           // compute logo width/height: prefer measured logoW/logoH, fallback to multiplier
           const gv2 = getLogoVars();
           const BASE_LOGO_BASE_MULTIPLIER = (gv2.baseMultiplierPercent != null) ? (gv2.baseMultiplierPercent / 100) : gv2.baseMultiplier;
-          const logoW = (metrics && metrics.logoW) ? metrics.logoW : ((metrics && metrics.cardW) ? Math.round(metrics.cardW * BASE_LOGO_BASE_MULTIPLIER) : Math.round(BASE_CARD_WIDTH * BASE_LOGO_BASE_MULTIPLIER * scale));
-          const logoH = (metrics && metrics.logoH) ? metrics.logoH : logoW;
+          const computedLogoMultiplier = (() => {
+            try {
+              const v = getComputedStyle(document.documentElement).getPropertyValue('--logo-size-multiplier');
+              if (v) return Number(v.replace('%',''))/100;
+            } catch {}
+            return 1;
+          })();
+          const logoW = (metrics && metrics.logoW) ? Math.round(metrics.logoW * computedLogoMultiplier) : ((metrics && metrics.cardW) ? Math.round(metrics.cardW * BASE_LOGO_BASE_MULTIPLIER * computedLogoMultiplier) : Math.round(BASE_CARD_WIDTH * BASE_LOGO_BASE_MULTIPLIER * scale * computedLogoMultiplier));
+          const logoH = (metrics && metrics.logoH) ? Math.round(metrics.logoH * computedLogoMultiplier) : logoW;
 
           const transform = `translateY(${logoVisual.translateY}px) scale(${logoVisual.scale})`;
           const logoStyleInner = {
@@ -311,7 +318,12 @@ const CardArc = ({ onCardClick, fadeStart = 300, fadeEnd = 50 }) => {
         {CARD_DATA.map((card, i) => {
           // Distribute cards from 180deg (left) to 0deg (right) in equal steps
           const total = CARD_DATA.length - 1;
-          const angle = Math.PI - (i * Math.PI) / total; // Math.PI (180deg) to 0 (0deg)
+          // base angle in radians
+          const baseAngle = Math.PI - (i * Math.PI) / total; // Math.PI (180deg) to 0 (0deg)
+          // read per-card degree adjustment (deg) from CSS var and convert to radians
+          const degAdjustRaw = getComputedStyle(document.documentElement).getPropertyValue(`--card-degree-adjust-${i}`) || '0deg';
+          const degAdjust = parseFloat(degAdjustRaw) || 0;
+          const angle = baseAngle + (degAdjust * Math.PI / 180);
           // read scaled metrics from the wrapper element if available
           const el = wrapperRef.current;
           const metrics = (el && el.__cardMetrics) || {};
@@ -319,15 +331,34 @@ const CardArc = ({ onCardClick, fadeStart = 300, fadeEnd = 50 }) => {
           const wrapperH = metrics.wrapperH || wrapperSize.height || WRAPPER_HEIGHT;
           const cardW = metrics.cardW || BASE_CARD_WIDTH;
           const cardH = metrics.cardH || BASE_CARD_HEIGHT;
-          const rX = metrics.radiusX || BASE_RADIUS_X;
-          const rY = metrics.radiusY || BASE_RADIUS_Y;
+          // per-card radius adjustment multiplier (percent)
+          const rXBase = metrics.radiusX || BASE_RADIUS_X;
+          const rYBase = metrics.radiusY || BASE_RADIUS_Y;
+          const rAdjRaw = getComputedStyle(document.documentElement).getPropertyValue(`--card-radius-adjust-${i}`) || '100%';
+          const rAdj = parseFloat(rAdjRaw.replace('%','')) || 100;
+          const rX = Math.round(rXBase * (rAdj / 100));
+          const rY = Math.round(rYBase * (rAdj / 100));
           const yOffs = metrics.yOffsets || BASE_Y_OFFSETS;
 
           const x = rX * Math.cos(angle);
-          const y = -rY * Math.sin(angle) + yOffs[i];
-          // Place x/y relative to the center of the wrapper instead of its top-left
-          const leftFromCenter = x + wrapperW / 2 - cardW / 2;
-          const topFromCenter = y + wrapperH / 2 - cardH / 2;
+          // Use positive sin to place the arc below the origin (9 o'clock -> 6 o'clock -> 3 o'clock)
+          const y = rY * Math.sin(angle) + yOffs[i];
+          // Place x/y relative to the logo center if available, otherwise wrapper center
+          let originX = wrapperW / 2;
+          let originY = wrapperH / 2;
+          try {
+            const logoEl = logoRef.current && logoRef.current.firstElementChild ? logoRef.current.firstElementChild : logoRef.current;
+            if (logoEl) {
+              const lr = logoEl.getBoundingClientRect();
+              const wr = wrapperRef.current.getBoundingClientRect();
+              // compute logo center relative to wrapper top-left
+              originX = (lr.left - wr.left) + lr.width / 2;
+              originY = (lr.top - wr.top) + lr.height / 2;
+            }
+          } catch {}
+
+          const leftFromCenter = x + originX - cardW / 2;
+          const topFromCenter = y + originY - cardH / 2;
           return (
             <Card
               key={card.label}
@@ -337,6 +368,8 @@ const CardArc = ({ onCardClick, fadeStart = 300, fadeEnd = 50 }) => {
                 position: 'absolute',
                 left: `${leftFromCenter}px`,
                 top: `${topFromCenter}px`,
+                width: `${cardW}px`,
+                height: `${cardH}px`,
                 zIndex: 10 + (hovered === i ? 1 : 0),
                 opacity: opacities[i] ?? 1,
                 // pass front/back image urls for the card faces

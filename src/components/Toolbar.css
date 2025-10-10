@@ -15,7 +15,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 2rem;
+  padding: 0 5px;
   box-sizing: border-box;
 }
 .toolbar-title {
@@ -27,7 +27,9 @@
 .toolbar-menu {
   display: flex;
   align-items: center;
+  margin-left: auto; /* push the menu to the far right */
 }
+.toolbar-title { flex: 0 0 auto; text-align: left; }
 .menu-icon {
   background: none;
   border: none;
@@ -51,12 +53,16 @@
   right: 2rem;
   top: 56px;
   width: 220px;
-  background: #fff;
+  /* 50% translucent background; keep text fully opaque */
+  background: rgba(255,255,255,0.5);
   border-radius: 8px;
   box-shadow: 0 10px 30px rgba(0,0,0,0.12);
   padding: 0.5rem;
   z-index: 1100;
   overflow: hidden; /* ensure control visuals don't extend beyond the menu */
+  /* subtle backdrop blur for readability */
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
   /* reduce all control panel text by ~5pt relative to the page base */
   font-size: calc(1rem - 5pt);
 }
@@ -141,6 +147,11 @@
 
 /* stacked label above the CardArc slider for small menu friendliness */
 .cardarc-control-label { font-weight: 700; padding: 0.25rem 0 0.25rem 0.25rem; color: var(--toolbar-dropdown-title-color, #111); }
+
+/* compact sliders for per-card tweaks: small height and no labels */
+.card-tweak-slider { width: 100%; height: 22px; appearance: none; background: linear-gradient(90deg,#eee,#fff); border-radius: 6px; }
+.card-tweak-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; border-radius: 50%; background: #333; cursor: pointer; }
+.card-tweak-slider::-moz-range-thumb { width: 12px; height: 12px; border-radius: 50%; background: #333; cursor: pointer; }
 .logo-control-label { font-size: inherit; }
 .logo-control-row input[type="range"] { width: 100%; max-width: 100%; box-sizing: border-box; padding: 0; margin: 0; }
 .logo-control-row input[type="number"] { width: 100%; }

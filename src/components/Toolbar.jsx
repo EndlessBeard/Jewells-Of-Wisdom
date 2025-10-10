@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
 import './Toolbar.css';
-import pkg from '../../package.json';
 
 const STORAGE_KEY = 'jow.selectedBackground';
 const BG_SCALE_KEY = 'jow.selectedBackgroundScale';
@@ -69,6 +68,60 @@ const Toolbar = () => {
     setCardarcToolbarGap(n);
     try { localStorage.setItem('jow.layout.cardarcToolbarGap', String(n)); } catch {}
     try { document.documentElement.style.setProperty('--cardarc-toolbar-gap', `${n}px`); } catch {}
+    try { window.dispatchEvent(new CustomEvent('layout:update')); } catch {}
+  };
+
+  // Global radius percent (50-150)
+  const [cardarcRadiusPercent, setCardarcRadiusPercent] = useState(() => {
+    try { const v = localStorage.getItem('jow.layout.cardarcRadiusPercent'); if (v != null) return Number(v); const cs = getComputedStyle(document.documentElement).getPropertyValue('--cardarc-radius-percent'); if (cs) return Number(cs.replace('%','')) || 100; } catch {} return 100;
+  });
+  const setCardArcRadiusPercent = (v) => {
+    const n = Number(v) || 100; setCardarcRadiusPercent(n); try { localStorage.setItem('jow.layout.cardarcRadiusPercent', String(n)); } catch {} try { document.documentElement.style.setProperty('--cardarc-radius-percent', `${n}`); } catch {} try { window.dispatchEvent(new CustomEvent('layout:update')); } catch {}
+  };
+
+  // Logo size multiplier (percent, 50-200)
+  const [logoSizeMultiplier, setLogoSizeMultiplier] = useState(() => {
+    try { const v = localStorage.getItem('jow.layout.logoSizeMultiplier'); if (v != null) return Number(v); const cs = getComputedStyle(document.documentElement).getPropertyValue('--logo-size-multiplier'); if (cs) return Number(cs.replace('%','')) || 100; } catch {} return 100;
+  });
+  const setLogoSizeMult = (v) => { const n = Number(v) || 100; setLogoSizeMultiplier(n); try { localStorage.setItem('jow.layout.logoSizeMultiplier', String(n)); } catch {} try { document.documentElement.style.setProperty('--logo-size-multiplier', `${n}%`); } catch {} try { window.dispatchEvent(new CustomEvent('layout:update')); } catch {} };
+
+  // per-card adjustments: degree and radius percent
+  const NUM_CARDS = 5;
+  const [cardDegAdjusts, setCardDegAdjusts] = useState(() => {
+    try {
+      const arr = Array.from({length: NUM_CARDS}, (_,i) => {
+        const k = `jow.layout.cardDegAdjust.${i}`;
+        const v = localStorage.getItem(k);
+        if (v != null) return Number(v);
+        const cs = getComputedStyle(document.documentElement).getPropertyValue(`--card-degree-adjust-${i}`) || '0deg';
+        return Number(parseFloat(cs)) || 0;
+      });
+      return arr;
+    } catch { return Array(NUM_CARDS).fill(0); }
+  });
+  const setCardDeg = (i, val) => {
+    const next = [...cardDegAdjusts]; next[i] = Number(val) || 0; setCardDegAdjusts(next);
+    try { localStorage.setItem(`jow.layout.cardDegAdjust.${i}`, String(next[i])); } catch {}
+    try { document.documentElement.style.setProperty(`--card-degree-adjust-${i}`, `${next[i]}deg`); } catch {}
+    try { window.dispatchEvent(new CustomEvent('layout:update')); } catch {}
+  };
+
+  const [cardRadiusAdjusts, setCardRadiusAdjusts] = useState(() => {
+    try {
+      const arr = Array.from({length: NUM_CARDS}, (_,i) => {
+        const k = `jow.layout.cardRadiusAdjust.${i}`;
+        const v = localStorage.getItem(k);
+        if (v != null) return Number(v);
+        const cs = getComputedStyle(document.documentElement).getPropertyValue(`--card-radius-adjust-${i}`) || '100%';
+        return Number(parseFloat(cs)) || 100;
+      });
+      return arr;
+    } catch { return Array(NUM_CARDS).fill(100); }
+  });
+  const setCardRadius = (i, val) => {
+    const next = [...cardRadiusAdjusts]; next[i] = Number(val) || 100; setCardRadiusAdjusts(next);
+    try { localStorage.setItem(`jow.layout.cardRadiusAdjust.${i}`, String(next[i])); } catch {}
+    try { document.documentElement.style.setProperty(`--card-radius-adjust-${i}`, `${next[i]}%`); } catch {}
     try { window.dispatchEvent(new CustomEvent('layout:update')); } catch {}
   };
 
@@ -198,6 +251,44 @@ const Toolbar = () => {
       if (bp) document.documentElement.style.setProperty('--cardarc-bottom-padding', bp);
       else if (!getComputedStyle(document.documentElement).getPropertyValue('--cardarc-bottom-padding')) document.documentElement.style.setProperty('--cardarc-bottom-padding', '12');
     } catch {}
+
+    // Initialize and persist CardArc related CSS vars (gap, radius, per-card tweaks)
+    try {
+      // toolbar gap
+      try {
+        const v = localStorage.getItem('jow.layout.cardarcToolbarGap');
+        if (v != null) document.documentElement.style.setProperty('--cardarc-toolbar-gap', `${Number(v)}px`);
+        else document.documentElement.style.setProperty('--cardarc-toolbar-gap', `${cardarcToolbarGap}px`);
+      } catch {}
+
+      // global radius percent
+      try {
+        const v = localStorage.getItem('jow.layout.cardarcRadiusPercent');
+        if (v != null) document.documentElement.style.setProperty('--cardarc-radius-percent', String(Number(v)));
+        else document.documentElement.style.setProperty('--cardarc-radius-percent', String(cardarcRadiusPercent));
+      } catch {}
+
+      // logo size multiplier
+      try {
+        const v = localStorage.getItem('jow.layout.logoSizeMultiplier');
+        if (v != null) document.documentElement.style.setProperty('--logo-size-multiplier', `${Number(v)}%`);
+        else document.documentElement.style.setProperty('--logo-size-multiplier', `${logoSizeMultiplier}%`);
+      } catch {}
+
+      // per-card degree and radius adjustments
+      try {
+        for (let i = 0; i < NUM_CARDS; i++) {
+          const degKey = `jow.layout.cardDegAdjust.${i}`;
+          const radKey = `jow.layout.cardRadiusAdjust.${i}`;
+          const dv = localStorage.getItem(degKey);
+          if (dv != null) document.documentElement.style.setProperty(`--card-degree-adjust-${i}`, `${Number(dv)}deg`);
+          else document.documentElement.style.setProperty(`--card-degree-adjust-${i}`, getComputedStyle(document.documentElement).getPropertyValue(`--card-degree-adjust-${i}`) || '0deg');
+          const rv = localStorage.getItem(radKey);
+          if (rv != null) document.documentElement.style.setProperty(`--card-radius-adjust-${i}`, `${Number(rv)}%`);
+          else document.documentElement.style.setProperty(`--card-radius-adjust-${i}`, getComputedStyle(document.documentElement).getPropertyValue(`--card-radius-adjust-${i}`) || '100%');
+        }
+      } catch {}
+    } catch {}
   }, []);
 
   // close dropdown when clicking outside
@@ -275,7 +366,7 @@ const Toolbar = () => {
   return (
     <header className="toolbar">
       <div className="toolbar-inner">
-  <div className="toolbar-title">Jewells of Wisdom <span className="toolbar-version">v{pkg.version}</span></div>
+        <div className="toolbar-title">Jewells Of Wisdom Version 0.1.0.</div>
         <nav className="toolbar-menu" ref={menuRef}>
           <button className="menu-icon" aria-label="Open menu" onClick={toggleMenu}>
             <span></span><span></span><span></span>
@@ -369,12 +460,35 @@ const Toolbar = () => {
                   <div className={`chev ${cardOpen ? 'open' : ''}`} aria-hidden="true" />
                 </button>
                 <div className={`collapsible-content ${cardOpen ? 'open' : ''}`}>
-                  <div className="logo-controls-grid">
+                    <div className="logo-controls-grid">
                     <div className="cardarc-control-label">Toolbar gap (px)</div>
                     <label className="cardarc-control-row">
                       <input type="range" min="0" max="200" value={cardarcToolbarGap} onChange={(e) => setCardArcGap(e.target.value)} />
                       <div className="logo-control-value">{cardarcToolbarGap}px</div>
                     </label>
+
+                    {/* Global radius percent control */}
+                    <div className="cardarc-control-label">Arc radius scale (%)</div>
+                    <label className="cardarc-control-row">
+                      <input type="range" min="50" max="150" value={cardarcRadiusPercent} onChange={(e) => setCardArcRadiusPercent(e.target.value)} />
+                      <div className="logo-control-value">{cardarcRadiusPercent}%</div>
+                    </label>
+
+                    {/* Logo size multiplier */}
+                    <div className="cardarc-control-label">Logo size multiplier</div>
+                    <label className="cardarc-control-row">
+                      <input type="range" min="50" max="200" value={logoSizeMultiplier} onChange={(e) => setLogoSizeMult(e.target.value)} />
+                      <div className="logo-control-value">{logoSizeMultiplier}%</div>
+                    </label>
+
+                    {/* Per-card fine tuning controls */}
+                    <div style={{gridColumn: '1 / -1', marginTop: '0.5rem', fontWeight:700}}>Per-card fine adjustments</div>
+                    {Array.from({length: NUM_CARDS}).map((_,i) => (
+                      <div key={`card-tweak-${i}`} style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'0.5rem',alignItems:'center'}}>
+                        <input className="card-tweak-slider" type="range" min="-20" max="20" step="0.5" value={cardDegAdjusts[i]} onChange={(e) => setCardDeg(i, e.target.value)} aria-label={`card-${i+1}-angle`} />
+                        <input className="card-tweak-slider" type="range" min="70" max="130" step="1" value={cardRadiusAdjusts[i]} onChange={(e) => setCardRadius(i, e.target.value)} aria-label={`card-${i+1}-radius`} />
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>

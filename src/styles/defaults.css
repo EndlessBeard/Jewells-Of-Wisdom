@@ -15,5 +15,19 @@
   --panel-bg-shop-btn-color: #111;
   /* gap (in px) between bottom of toolbar and top of the CardArc container */
   --cardarc-toolbar-gap: 12px;
+  /* global radius percent: scales the arc radii relative to computed radii (100 = baseline) */
+  --cardarc-radius-percent: 100;
+  /* per-card degree adjustments (degrees offset added to computed angle). Provide five defaults for 5 cards */
+  --card-degree-adjust-0: 0deg;
+  --card-degree-adjust-1: 0deg;
+  --card-degree-adjust-2: 0deg;
+  --card-degree-adjust-3: 0deg;
+  --card-degree-adjust-4: 0deg;
+  /* per-card radius adjustments (percent multiplier applied to radius for each card) */
+  --card-radius-adjust-0: 100%;
+  --card-radius-adjust-1: 100%;
+  --card-radius-adjust-2: 100%;
+  --card-radius-adjust-3: 100%;
+  --card-radius-adjust-4: 100%;
 }
 /* generated-defaults.css is imported directly from main.jsx so it can be loaded after these base defaults */

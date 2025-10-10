@@ -58,6 +58,12 @@ export function computeCardLayout(viewW, viewH, opts = {}) {
   const radiusX = Math.min(unclampedRadiusX, Math.max(0, maxRadiusX));
   const radiusY = Math.round(baseRadiusY * scale);
 
+  // apply a global radius percent modifier (read from root CSS var if present)
+  const radiusPercent = getRootNum('--cardarc-radius-percent', 100); // percent
+  const radiusScale = radiusPercent / 100;
+  const radiusXFinal = Math.round(radiusX * radiusScale);
+  const radiusYFinal = Math.round(radiusY * radiusScale);
+
   const yOffsets = baseYOffsets.map(v => Math.round(v * scale));
 
   // logo size: square, derived from viewport width percent
@@ -72,8 +78,8 @@ export function computeCardLayout(viewW, viewH, opts = {}) {
   return {
     cardW,
     cardH,
-    radiusX,
-    radiusY,
+    radiusX: radiusXFinal,
+    radiusY: radiusYFinal,
     yOffsets,
     wrapperW: canvasW,
     wrapperH,
@@ -87,5 +93,6 @@ export function computeCardLayout(viewW, viewH, opts = {}) {
     logoPercent,
     logoPaddingPercent,
     edgePaddingPercent,
+    radiusPercent,
   };
 }
