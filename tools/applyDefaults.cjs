@@ -32,7 +32,8 @@ const tryParseJSON = (v) => {
 }
 
 const mapping = {
-  'jow.selectedBackground': (v) => `--page-bg: url('${v.replace(/'/g, "\\'")}');`,
+  // Always write the stable public background path regardless of input value
+  'jow.selectedBackground': () => `--page-bg: url('/assets/19.png');`,
   'jow.selectedBackgroundScale': (v) => `--page-bg-scale: ${v};`,
   'jow.panelColors': (v) => {
     const obj = tryParseJSON(v);

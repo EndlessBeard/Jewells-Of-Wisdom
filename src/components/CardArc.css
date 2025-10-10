@@ -4,6 +4,8 @@
   width: 100%;
   box-sizing: border-box;
   margin: 0;
+  /* space between bottom of the toolbar and the CardArc top */
+  margin-top: var(--cardarc-toolbar-gap, 12px);
   padding: 0;
   min-height: auto;
   pointer-events: none;

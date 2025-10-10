@@ -13,5 +13,7 @@
   /* toolbar/menu and shop button text color defaults */
   --toolbar-dropdown-title-color: #111;
   --panel-bg-shop-btn-color: #111;
+  /* gap (in px) between bottom of toolbar and top of the CardArc container */
+  --cardarc-toolbar-gap: 12px;
 }
 /* generated-defaults.css is imported directly from main.jsx so it can be loaded after these base defaults */

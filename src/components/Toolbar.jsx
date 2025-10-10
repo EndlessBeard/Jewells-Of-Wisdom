@@ -1,7 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
 import './Toolbar.css';
-import b19 from '../assets/backgrounds/19.png';
-import defaultBg from '../assets/background.png';
 import pkg from '../../package.json';
 
 const STORAGE_KEY = 'jow.selectedBackground';
@@ -15,6 +13,7 @@ const LAYOUT_KEYS = {
   toolbarGapPercent: 'jow.layout.toolbarGapPercent',
   logoPanelPaddingPercent: 'jow.layout.logoPanelPaddingPercent',
   bottomPadding: 'jow.layout.bottomPadding',
+  cardarcToolbarGap: 'jow.layout.cardarcToolbarGap'
 };
 
 const SECTIONS = [
@@ -54,6 +53,25 @@ const Toolbar = () => {
 
   const menuRef = useRef(null);
 
+  // CardArc toolbar gap (px)
+  const [cardarcToolbarGap, setCardarcToolbarGap] = useState(() => {
+    try {
+      const v = localStorage.getItem('jow.layout.cardarcToolbarGap');
+      if (v != null) return Number(v);
+      const cs = getComputedStyle(document.documentElement).getPropertyValue('--cardarc-toolbar-gap');
+      if (cs) return Number(cs.replace('px','')) || 12;
+    } catch {}
+    return 12;
+  });
+
+  const setCardArcGap = (v) => {
+    const n = Number(v) || 0;
+    setCardarcToolbarGap(n);
+    try { localStorage.setItem('jow.layout.cardarcToolbarGap', String(n)); } catch {}
+    try { document.documentElement.style.setProperty('--cardarc-toolbar-gap', `${n}px`); } catch {}
+    try { window.dispatchEvent(new CustomEvent('layout:update')); } catch {}
+  };
+
   const buildDefaultsObject = () => {
     const pc = (() => { try { return JSON.parse(localStorage.getItem(PANEL_COLORS_KEY) || '{}'); } catch { return {}; } })();
     const logo = (() => { try { return JSON.parse(localStorage.getItem('jow.logoSettings') || '{}'); } catch { return {}; } })();
@@ -82,6 +100,8 @@ const Toolbar = () => {
   const exportDefaults = () => {
     try {
       const obj = buildDefaultsObject();
+      // Force the exported selectedBackground to the stable public asset
+      try { obj.selectedBackground = '/assets/19.png'; } catch {}
       const data = JSON.stringify(obj, null, 2);
       const blob = new Blob([data], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
@@ -100,16 +120,11 @@ const Toolbar = () => {
   // Hydrate state and CSS vars from localStorage on mount
   useEffect(() => {
     try {
-      // Hard-code background #19 as the site default and persist unless user has explicitly set another
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        document.documentElement.style.setProperty('--page-bg', `url('${saved}')`);
-        setCurrentBg(saved);
-      } else {
-        // use background 19 by default
-        document.documentElement.style.setProperty('--page-bg', `url('${b19}')`);
-        try { if (!localStorage.getItem(STORAGE_KEY)) localStorage.setItem(STORAGE_KEY, b19); } catch {}
-      }
+      // Force background #19 as the site default (stable public asset)
+      const bg = '/assets/19.png';
+      try { document.documentElement.style.setProperty('--page-bg', `url('${bg}')`); } catch {}
+      try { if (!localStorage.getItem(STORAGE_KEY)) localStorage.setItem(STORAGE_KEY, bg); } catch {}
+      setCurrentBg(bg);
     } catch {}
 
     try {
@@ -196,10 +211,12 @@ const Toolbar = () => {
 
   const toggleMenu = () => setOpen(o => !o);
 
-  const selectBackground = (src) => {
-    try { document.documentElement.style.setProperty('--page-bg', `url('${src}')`); } catch {}
-    try { localStorage.setItem(STORAGE_KEY, src); } catch {}
-    setCurrentBg(src);
+  const selectBackground = (_src) => {
+    // background is hard-coded to /assets/19.png; ignore attempts to change it
+    const bg = '/assets/19.png';
+    try { document.documentElement.style.setProperty('--page-bg', `url('${bg}')`); } catch {}
+    try { localStorage.setItem(STORAGE_KEY, bg); } catch {}
+    setCurrentBg(bg);
     setOpen(false);
   };
 
@@ -340,6 +357,23 @@ const Toolbar = () => {
                     <label className="toolbar-control-row">
                       <input type="checkbox" checked={showInfoPanel} onChange={(e) => toggleShowInfoPanel(e.target.checked)} />
                       <span style={{marginLeft:'0.5rem'}}>Show Info Panel</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              {/* Card Arc controls */}
+              <div className="dropdown-section">
+                <button className="collapsible-header" onClick={() => setCardOpen(v => !v)} aria-expanded={cardOpen}>
+                  <div className="dropdown-title">Card Arc</div>
+                  <div className={`chev ${cardOpen ? 'open' : ''}`} aria-hidden="true" />
+                </button>
+                <div className={`collapsible-content ${cardOpen ? 'open' : ''}`}>
+                  <div className="logo-controls-grid">
+                    <div className="cardarc-control-label">Toolbar gap (px)</div>
+                    <label className="cardarc-control-row">
+                      <input type="range" min="0" max="200" value={cardarcToolbarGap} onChange={(e) => setCardArcGap(e.target.value)} />
+                      <div className="logo-control-value">{cardarcToolbarGap}px</div>
                     </label>
                   </div>
                 </div>
