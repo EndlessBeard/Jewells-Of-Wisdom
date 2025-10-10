@@ -45,6 +45,9 @@ export function computeCardLayout(viewW, viewH, opts = {}) {
   // card width is expressed as a percent of viewport width (so it's consistent across sizes)
   let cardW = Math.round((cardPercent / 100) * viewW);
   cardW = clamp(cardW, minCardWidth, maxCardWidth);
+  // allow an external multiplier to scale card sizes (percent, default 100)
+  const cardSizeMultiplier = getRootNum('--card-size-multiplier-percent', 100);
+  cardW = Math.round(cardW * (cardSizeMultiplier / 100));
   const cardH = Math.round(cardW * cardAspect);
 
   // scale relative to the base card width so other geometry scales consistently

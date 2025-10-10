@@ -112,6 +112,7 @@ const CardArc = ({ onCardClick, fadeStart = 300, fadeEnd = 50 }) => {
 
   const wrapperRef = useRef(null);
   const logoRef = useRef(null);
+  const arcRef = useRef(null);
   const [wrapperSize, setWrapperSize] = useState({ width: WRAPPER_WIDTH, height: WRAPPER_HEIGHT });
   const [opacities, setOpacities] = useState(Array(CARD_DATA.length).fill(1));
   const [logoVisual, setLogoVisual] = useState({ opacity: 1, scale: 1, translateY: 0 });
@@ -260,6 +261,140 @@ const CardArc = ({ onCardClick, fadeStart = 300, fadeEnd = 50 }) => {
     el.__cardMetrics = { cardW, cardH, radiusX, radiusY, yOffsets, wrapperW, wrapperH, scale, logoW: layout.logoW, logoH: layout.logoH };
   }, [wrapperSize]);
 
+  // Ensure the arc container height matches the visual bottom of the cards
+  // so the container bottom aligns with the lowest visual point.
+  // This computes the max bottom across all cards (more robust than using index 2 only),
+  // reads a CSS var for bottom padding, and publishes two CSS vars on :root so other
+  // components (InfoPanel) can read the visual bottom if desired.
+  useEffect(() => {
+    const adjustArcHeight = () => {
+      const el = wrapperRef.current;
+      const arcEl = arcRef.current || wrapperRef.current;
+      const logoEl = logoRef.current && (logoRef.current.firstElementChild || logoRef.current);
+      if (!el || !arcEl || !logoEl) return;
+      const metrics = el.__cardMetrics || {};
+      const cardH = metrics.cardH || BASE_CARD_HEIGHT;
+      const wrapperH = metrics.wrapperH || wrapperSize.height || WRAPPER_HEIGHT;
+
+      try {
+        const ar = arcEl.getBoundingClientRect();
+
+        // read breathing-room padding from CSS var --cardarc-bottom-padding (fallback 8px)
+        const rootStyle = getComputedStyle(document.documentElement);
+        const padRaw = rootStyle.getPropertyValue('--cardarc-bottom-padding') || '';
+        let padding = 8;
+        if (padRaw) {
+          const p = parseFloat(padRaw.replace('px',''));
+          if (!Number.isNaN(p)) padding = p;
+        }
+
+        // Robust approach: measure actual rendered card DOM elements inside arc
+        const cardEls = (arcEl.querySelectorAll && arcEl.querySelectorAll('.card-arc-card')) ? Array.from(arcEl.querySelectorAll('.card-arc-card')) : [];
+        let maxBottom = -Infinity;
+        if (cardEls.length > 0) {
+          for (const c of cardEls) {
+            try {
+              const r = c.getBoundingClientRect();
+              // bottom relative to arc top
+              const bottomRel = (r.bottom - ar.top);
+              if (bottomRel > maxBottom) maxBottom = bottomRel;
+            } catch (e) {}
+          }
+        }
+
+        // If no cards found or measurement failed, fall back to computed arc math
+        if (!isFinite(maxBottom) || maxBottom < 0) {
+          // fall back to previous math based on computed metrics and logo origin
+          const lr = logoEl.getBoundingClientRect();
+          const originY = (lr.top - ar.top) + lr.height / 2;
+          const total = CARD_DATA.length - 1;
+          for (let i = 0; i <= total; i++) {
+            const baseAngle = Math.PI - (i * Math.PI) / total;
+            const degAdjustRaw = getComputedStyle(document.documentElement).getPropertyValue(`--card-degree-adjust-${i}`) || '0deg';
+            const degAdjust = parseFloat(degAdjustRaw) || 0;
+            const angle = baseAngle + (degAdjust * Math.PI / 180);
+            const rXBase = metrics.radiusX || BASE_RADIUS_X;
+            const rYBase = metrics.radiusY || BASE_RADIUS_Y;
+            const rAdjRaw = getComputedStyle(document.documentElement).getPropertyValue(`--card-radius-adjust-${i}`) || '100%';
+            const rAdj = parseFloat(rAdjRaw.replace('%','')) || 100;
+            const rX = Math.round(rXBase * (rAdj / 100));
+            const rY = Math.round(rYBase * (rAdj / 100));
+            const yOffs = (metrics.yOffsets && metrics.yOffsets[i]) || BASE_Y_OFFSETS[i] || 0;
+            const y = rY * Math.sin(angle) + yOffs;
+            const topFromCenter = y + originY - cardH / 2;
+            const bottomPoint = topFromCenter + cardH;
+            if (bottomPoint > maxBottom) maxBottom = bottomPoint;
+          }
+        }
+
+  // Prefer the measured visual bottom of the cards (plus padding).
+  // Keep a small minimum so the arc never collapses too far.
+  const MIN_WRAPPER_H = 120;
+  const desiredHeight = Math.max(MIN_WRAPPER_H, Math.ceil(maxBottom + padding));
+
+        // apply to arc container so absolute-positioned cards have the correct box
+        arcEl.style.height = `${desiredHeight}px`;
+        // also publish to the wrapper's CSS var for diagnostics/UI
+        try { el.style.setProperty('--wrapper-h', `${desiredHeight}px`); } catch {}
+
+        // publish helpful globals so other components can align to the visual bottom
+        try {
+          // visual bottom offset inside the arc container
+          const prevOffset = getComputedStyle(document.documentElement).getPropertyValue('--cardarc-visual-bottom-offset') || '';
+          const newOffset = `${desiredHeight}px`;
+          if (prevOffset !== newOffset) {
+            document.documentElement.style.setProperty('--cardarc-visual-bottom-offset', newOffset);
+          }
+
+          // visual bottom page Y coordinate (useful for absolute positioning)
+          // ar.top is viewport-relative; convert to page Y by adding scrollY
+          const pageBottomY = Math.round(ar.top + desiredHeight + (window.scrollY || 0));
+          const prevPageY = getComputedStyle(document.documentElement).getPropertyValue('--cardarc-visual-bottom-page-y') || '';
+          const newPageY = `${pageBottomY}px`;
+          if (prevPageY !== newPageY) {
+            document.documentElement.style.setProperty('--cardarc-visual-bottom-page-y', newPageY);
+          }
+
+          // Only dispatch layout:update if the computed height/pageY changed to avoid recursion
+          const last = arcEl.__lastDesiredHeight || 0;
+          if (last !== desiredHeight) {
+            arcEl.__lastDesiredHeight = desiredHeight;
+            try { window.dispatchEvent(new CustomEvent('layout:update', { detail: { source: 'cardarc' } })); } catch (e) {}
+          }
+        } catch (e) {
+          // ignore
+        }
+      } catch (e) {
+        // ignore measurement errors
+      }
+    };
+
+    // run once after a layout pass to allow images/fonts to settle
+    requestAnimationFrame(() => setTimeout(adjustArcHeight, 0));
+    window.addEventListener('resize', adjustArcHeight);
+    // Add a guarded layout:update listener that ignores events originated by this component
+    const onLayoutUpdate = (ev) => {
+      try {
+        if (ev && ev.detail && ev.detail.source === 'cardarc') return; // ignore our own dispatch
+      } catch (e) {}
+      adjustArcHeight();
+    };
+    try { window.addEventListener('layout:update', onLayoutUpdate); } catch {}
+
+    // if the logo contains an <img>, re-run after it loads to avoid undershoot
+    try {
+      const logoImg = logoRef.current && logoRef.current.querySelector ? logoRef.current.querySelector('img') : null;
+      if (logoImg && !logoImg.complete) {
+        const onLoad = () => { adjustArcHeight(); logoImg.removeEventListener('load', onLoad); };
+        logoImg.addEventListener('load', onLoad);
+      }
+    } catch (e) {}
+    return () => {
+      window.removeEventListener('resize', adjustArcHeight);
+      try { window.removeEventListener('layout:update', onLayoutUpdate); } catch {}
+    };
+  }, [wrapperSize]);
+
   const handleMouseEnter = idx => {
     setHovered(idx);
     setFlipped(f => f.map((v, i) => (i === idx ? true : v)));
@@ -305,16 +440,24 @@ const CardArc = ({ onCardClick, fadeStart = 300, fadeEnd = 50 }) => {
             transition: 'transform 220ms linear, opacity 220ms linear',
           };
 
-          const DEBUG = false;
           return (
-            <div className={`card-arc-logo ${DEBUG ? 'debug-temp-logo' : ''}`} ref={logoRef}>
+            <div className={`card-arc-logo`} ref={logoRef}>
               <Logo style={logoStyleInner} label="JW" />
             </div>
           );
         })()}
 
         {/* Arc container: cards positioned inside here */}
-        <div className="card-arc-arc" style={{ position: 'relative', width: '100%', height: `${(wrapperRef.current && wrapperRef.current.__cardMetrics ? wrapperRef.current.__cardMetrics.wrapperH : wrapperSize.height) || WRAPPER_HEIGHT}px` }}>
+  <div
+    className="card-arc-arc"
+    ref={arcRef}
+    style={{
+      position: 'relative',
+      width: '100%',
+      // use the published visual-bottom offset CSS var so height changes persist
+      height: `var(--cardarc-visual-bottom-offset, ${(wrapperRef.current && wrapperRef.current.__cardMetrics ? wrapperRef.current.__cardMetrics.wrapperH : wrapperSize.height) || WRAPPER_HEIGHT}px)`,
+    }}
+  >
         {CARD_DATA.map((card, i) => {
           // Distribute cards from 180deg (left) to 0deg (right) in equal steps
           const total = CARD_DATA.length - 1;
@@ -348,12 +491,17 @@ const CardArc = ({ onCardClick, fadeStart = 300, fadeEnd = 50 }) => {
           let originY = wrapperH / 2;
           try {
             const logoEl = logoRef.current && logoRef.current.firstElementChild ? logoRef.current.firstElementChild : logoRef.current;
-            if (logoEl) {
+            // prefer computing logo center relative to the arc container (the element that
+            // the cards are absolutely positioned within). Previously this used the
+            // wrapperRef bounding rect which caused offsets when the logo sits above
+            // the arc container.
+            const arcEl = (arcRef && arcRef.current) ? arcRef.current : wrapperRef.current;
+            if (logoEl && arcEl) {
               const lr = logoEl.getBoundingClientRect();
-              const wr = wrapperRef.current.getBoundingClientRect();
-              // compute logo center relative to wrapper top-left
-              originX = (lr.left - wr.left) + lr.width / 2;
-              originY = (lr.top - wr.top) + lr.height / 2;
+              const ar = arcEl.getBoundingClientRect();
+              // compute logo center relative to arc container top-left
+              originX = (lr.left - ar.left) + lr.width / 2;
+              originY = (lr.top - ar.top) + lr.height / 2;
             }
           } catch {}
 

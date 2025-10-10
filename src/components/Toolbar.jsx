@@ -34,6 +34,7 @@ const Toolbar = () => {
   const [logoOpen, setLogoOpen] = useState(false);
   const [toolbarOpen, setToolbarOpen] = useState(false);
   const [cardOpen, setCardOpen] = useState(false);
+  const [infoOpen, setInfoOpen] = useState(false);
   // effects UI removed
 
   const [currentBg, setCurrentBg] = useState(null);
@@ -84,6 +85,12 @@ const Toolbar = () => {
     try { const v = localStorage.getItem('jow.layout.logoSizeMultiplier'); if (v != null) return Number(v); const cs = getComputedStyle(document.documentElement).getPropertyValue('--logo-size-multiplier'); if (cs) return Number(cs.replace('%','')) || 100; } catch {} return 100;
   });
   const setLogoSizeMult = (v) => { const n = Number(v) || 100; setLogoSizeMultiplier(n); try { localStorage.setItem('jow.layout.logoSizeMultiplier', String(n)); } catch {} try { document.documentElement.style.setProperty('--logo-size-multiplier', `${n}%`); } catch {} try { window.dispatchEvent(new CustomEvent('layout:update')); } catch {} };
+
+  // Card size multiplier (percent, 50-200)
+  const [cardSizeMultiplier, setCardSizeMultiplier] = useState(() => {
+    try { const v = localStorage.getItem('jow.layout.cardSizeMultiplier'); if (v != null) return Number(v); const cs = getComputedStyle(document.documentElement).getPropertyValue('--card-size-multiplier-percent'); if (cs) return Number(cs.replace('%','')) || 100; } catch {} return 100;
+  });
+  const setCardSizeMult = (v) => { const n = Number(v) || 100; setCardSizeMultiplier(n); try { localStorage.setItem('jow.layout.cardSizeMultiplier', String(n)); } catch {} try { document.documentElement.style.setProperty('--card-size-multiplier-percent', `${n}`); } catch {} try { window.dispatchEvent(new CustomEvent('layout:update')); } catch {} };
 
   // per-card adjustments: degree and radius percent
   const NUM_CARDS = 5;
@@ -288,6 +295,12 @@ const Toolbar = () => {
           else document.documentElement.style.setProperty(`--card-radius-adjust-${i}`, getComputedStyle(document.documentElement).getPropertyValue(`--card-radius-adjust-${i}`) || '100%');
         }
       } catch {}
+      // card size multiplier
+      try {
+        const v = localStorage.getItem('jow.layout.cardSizeMultiplier');
+        if (v != null) document.documentElement.style.setProperty('--card-size-multiplier-percent', String(Number(v)));
+        else document.documentElement.style.setProperty('--card-size-multiplier-percent', String(cardSizeMultiplier));
+      } catch {}
     } catch {}
   }, []);
 
@@ -360,6 +373,25 @@ const Toolbar = () => {
   const toggleShowInfoPanel = (v) => {
     try { localStorage.setItem('jow.ui.showInfoPanel', String(v)); } catch {}
     setShowInfoPanel(v);
+    try { window.dispatchEvent(new CustomEvent('layout:update')); } catch {}
+  };
+
+  // Info panel bottom padding (px) control
+  const [infoBottomPadding, setInfoBottomPadding] = useState(() => {
+    try {
+      const v = localStorage.getItem(LAYOUT_KEYS.bottomPadding);
+      if (v != null) return Number(v);
+      const cs = getComputedStyle(document.documentElement).getPropertyValue('--cardarc-bottom-padding') || '';
+      if (cs) return Number(cs.replace('px','')) || 12;
+    } catch {}
+    return 12;
+  });
+
+  const setInfoBottom = (v) => {
+    const n = Number(v) || 0;
+    setInfoBottomPadding(n);
+    try { localStorage.setItem(LAYOUT_KEYS.bottomPadding, String(n)); } catch {}
+    try { document.documentElement.style.setProperty('--cardarc-bottom-padding', `${n}px`); } catch {}
     try { window.dispatchEvent(new CustomEvent('layout:update')); } catch {}
   };
 
@@ -453,6 +485,24 @@ const Toolbar = () => {
                 </div>
               </div>
 
+              {/* Info Panel controls */}
+              <div className="dropdown-section">
+                <button className="collapsible-header" onClick={() => setInfoOpen(v => !v)} aria-expanded={infoOpen}>
+                  <div className="dropdown-title">Info Panel</div>
+                  <div className={`chev ${infoOpen ? 'open' : ''}`} aria-hidden="true" />
+                </button>
+                <div className={`collapsible-content ${infoOpen ? 'open' : ''}`}>
+                  <div style={{padding:'0.5rem',display:'grid',gap:'0.5rem'}}>
+                    <div style={{fontWeight:700}}>Info Panel spacing</div>
+                    <label style={{display:'flex',alignItems:'center',gap:'0.5rem'}}>
+                      <input type="range" min="0" max="120" value={infoBottomPadding} onChange={(e) => setInfoBottom(e.target.value)} />
+                      <div style={{minWidth: '48px', textAlign:'right'}}>{infoBottomPadding}px</div>
+                    </label>
+                    <div style={{fontSize:'0.8rem',color:'#666'}}>Adjust extra breathing room below the cards before the Info Panel starts.</div>
+                  </div>
+                </div>
+              </div>
+
               {/* Card Arc controls */}
               <div className="dropdown-section">
                 <button className="collapsible-header" onClick={() => setCardOpen(v => !v)} aria-expanded={cardOpen}>
@@ -479,6 +529,13 @@ const Toolbar = () => {
                     <label className="cardarc-control-row">
                       <input type="range" min="50" max="200" value={logoSizeMultiplier} onChange={(e) => setLogoSizeMult(e.target.value)} />
                       <div className="logo-control-value">{logoSizeMultiplier}%</div>
+                    </label>
+
+                    {/* Card size multiplier */}
+                    <div className="cardarc-control-label">Card size multiplier</div>
+                    <label className="cardarc-control-row">
+                      <input type="range" min="50" max="200" value={cardSizeMultiplier} onChange={(e) => setCardSizeMult(e.target.value)} />
+                      <div className="logo-control-value">{cardSizeMultiplier}%</div>
                     </label>
 
                     {/* Per-card fine tuning controls */}

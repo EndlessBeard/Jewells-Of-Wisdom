@@ -31,7 +31,8 @@
 
 .card-arc-arc {
   width: 100%;
-  position: static; /* remove positioning context so layout is flow-based */
+  /* make this the containing block for absolutely-positioned cards */
+  position: relative;
   box-sizing: border-box;
 }
 .card-arc-card {
@@ -95,12 +96,4 @@
   color: #555;
 }
 
-/* Debug outlines: toggle by adding "debug-outlines" class to documentElement (root) */
-:root.debug-outlines .card-arc-card {
-  outline: 2px dashed rgba(255, 0, 128, 0.85);
-  box-shadow: none !important; /* reduce visual noise while debugging */
-}
-
-:root.debug-outlines .card-arc-inner {
-  transform: none !important; /* avoid flipped/animation transforms interfering with outlines */
-}
+/* Debug outlines removed for clean build */

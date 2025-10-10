@@ -53,8 +53,8 @@
   right: 2rem;
   top: 56px;
   width: 220px;
-  /* 50% translucent background; keep text fully opaque */
-  background: rgba(255,255,255,0.5);
+  /* 30% translucent background (20 percentage points more transparent than before); keep text fully opaque */
+  background: rgba(255,255,255,0.3);
   border-radius: 8px;
   box-shadow: 0 10px 30px rgba(0,0,0,0.12);
   padding: 0.5rem;

@@ -183,6 +183,46 @@ const InfoPanel = ({ selectedCard = null }) => {
     }
   }, [animating, current]);
 
+  // Adjust the InfoPanel vertical position so it starts at (or below) the
+  // CardArc visual bottom. Instead of relying on a CSS var, query the
+  // rendered `.card-arc-arc` element's bounding rect so we use the browser's
+  // actual layout values (more robust against timing/var-clobbering).
+  useEffect(() => {
+    const adjustPanelPos = () => {
+      const el = wrapperRef.current;
+      if (!el || typeof window === 'undefined') return;
+      try {
+        // Find the arc container directly and measure its bottom in page coords
+        const arcEl = document.querySelector('.card-arc-arc');
+        if (!arcEl) return;
+        const ar = arcEl.getBoundingClientRect();
+        const pageY = Math.round(ar.top + ar.height + (window.scrollY || 0));
+        // compute current top of this InfoPanel in page coordinates
+        const rect = el.getBoundingClientRect();
+        const currentTopPageY = Math.round(rect.top + (window.scrollY || 0));
+        const delta = pageY - currentTopPageY;
+        // If the panel currently sits above the visual bottom, push it down by delta.
+        if (delta > 0) {
+          el.style.marginTop = `${delta}px`;
+        } else {
+          // otherwise remove any forced margin so normal flow applies
+          el.style.marginTop = '';
+        }
+      } catch (e) {
+        // ignore
+      }
+    };
+
+    // run once and on layout/resize updates
+    adjustPanelPos();
+    window.addEventListener('resize', adjustPanelPos);
+    try { window.addEventListener('layout:update', adjustPanelPos); } catch {}
+    return () => {
+      window.removeEventListener('resize', adjustPanelPos);
+      try { window.removeEventListener('layout:update', adjustPanelPos); } catch {}
+    };
+  }, []);
+
   const renderPanel = (idx, cls) => {
     const s = SECTIONS[idx];
     if (!s) return null;
