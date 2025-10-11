@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import './InfoPanel.css';
+import { computeCardLayout } from '../utils/computeLayout';
 
 // Sections derived from the outline (mapped to Card labels)
 const SECTIONS = [
@@ -93,21 +94,23 @@ const ShopCarousel = ({ items = [] }) => {
   if (!items || items.length === 0) return <div className="shop-empty">No items in this category.</div>;
   const it = items[idx];
   return (
-    <div className="shop-carousel">
-      <button className="carousel-btn left" aria-label="Previous item" onClick={prev}>◀</button>
-      <div className="carousel-item">
-        <div className="shop-card">
-          <div className="shop-card-media">
-            <img src={it.image} alt={it.title} />
-          </div>
-          <div className="carousel-meta">
-            <div className="item-title">{it.title}</div>
-            <a className="shop-link" href={it.link} target="_blank" rel="noreferrer">Buy on Shopify</a>
+    <>
+      <div className="shop-carousel">
+        <button className="carousel-btn left" aria-label="Previous item" onClick={prev}>◀</button>
+        <div className="carousel-item">
+          <div className="shop-card">
+            <div className="shop-card-media">
+              <img src={it.image} alt={it.title} />
+            </div>
           </div>
         </div>
+        <button className="carousel-btn right" aria-label="Next item" onClick={next}>▶</button>
       </div>
-      <button className="carousel-btn right" aria-label="Next item" onClick={next}>▶</button>
-    </div>
+      <div className="shop-item-info" aria-live="polite">
+        <div className="item-title">{it.title}</div>
+        <a className="shop-link" href={it.link} target="_blank" rel="noreferrer">Buy on Shopify</a>
+      </div>
+    </>
   );
 };
 
@@ -150,6 +153,28 @@ const InfoPanel = ({ selectedCard = null }) => {
   const [animating, setAnimating] = useState(false);
   const [direction, setDirection] = useState('left');
   const wrapperRef = useRef(null);
+
+  // Publish shop carousel card pixel size so the carousel card matches CardArc cards.
+  useEffect(() => {
+    const updateShopCardSize = () => {
+      try {
+        const layout = computeCardLayout(window.innerWidth, window.innerHeight, { maxCanvasWidth: 900 });
+        const w = layout.cardW;
+        const h = layout.cardH;
+        document.documentElement.style.setProperty('--shop-card-w', `${w}px`);
+        document.documentElement.style.setProperty('--shop-card-h', `${h}px`);
+      } catch (e) {
+        // ignore
+      }
+    };
+    updateShopCardSize();
+    window.addEventListener('resize', updateShopCardSize);
+    try { window.addEventListener('layout:update', updateShopCardSize); } catch {}
+    return () => {
+      window.removeEventListener('resize', updateShopCardSize);
+      try { window.removeEventListener('layout:update', updateShopCardSize); } catch {}
+    };
+  }, []);
 
   // Sync incoming selectedCard into local state with animation
   useEffect(() => {

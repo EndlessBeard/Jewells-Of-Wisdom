@@ -460,6 +460,24 @@ const Toolbar = () => {
     try { window.dispatchEvent(new CustomEvent('layout:update')); } catch {}
   };
 
+  // Shop panel height multiplier (percent) - controls --shop-panel-height-percent
+  const [shopPanelHeightPercent, setShopPanelHeightPercent] = useState(() => {
+    try {
+      const v = localStorage.getItem('jow.layout.shopPanelHeightPercent');
+      if (v != null) return Number(v);
+      const cs = getComputedStyle(document.documentElement).getPropertyValue('--shop-panel-height-percent');
+      if (cs) return Number(cs) || 150;
+    } catch {}
+    return 150;
+  });
+  const setShopPanelHeight = (v) => {
+    const n = Number(v) || 0;
+    setShopPanelHeightPercent(n);
+    try { localStorage.setItem('jow.layout.shopPanelHeightPercent', String(n)); } catch {}
+    try { document.documentElement.style.setProperty('--shop-panel-height-percent', String(n)); } catch {}
+    try { window.dispatchEvent(new CustomEvent('layout:update')); } catch {}
+  };
+
   return (
     <header className="toolbar">
       <div className="toolbar-inner">
@@ -583,6 +601,11 @@ const Toolbar = () => {
                       <div style={{flex:1}}>Card size</div>
                       <input type="range" min="50" max="200" value={shopCardSizeMultiplier} onChange={(e) => setShopSizeMult(e.target.value)} />
                       <div style={{minWidth: '48px', textAlign:'right'}}>{shopCardSizeMultiplier}%</div>
+                    </label>
+                    <label style={{display:'flex',alignItems:'center',gap:'0.5rem'}}>
+                      <div style={{flex:1}}>Panel height</div>
+                      <input type="range" min="100" max="300" value={shopPanelHeightPercent} onChange={(e) => setShopPanelHeight(e.target.value)} />
+                      <div style={{minWidth: '48px', textAlign:'right'}}>{shopPanelHeightPercent}%</div>
                     </label>
                   </div>
                 </div>

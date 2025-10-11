@@ -200,15 +200,7 @@
 }
 
 /* Shop carousels */
-/* Shop removed — placeholder styling for the Store panel */
-.panel#shop {
-  /* neutral shop panel layout 
-  max-width: none;
-  width: auto;
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;*/
-}
+/* Shop panel uses the generic .panel rules; additional shop-specific rules follow. */
 
 /* Per-category button backgrounds: allow toolbar to write --panel-bg-shop-cat-<name> vars */
 
@@ -286,10 +278,32 @@
   gap: 12px;
 }
 
+/* shop panel height: compute a relative height based on the computed card height
+   --shop-panel-height-percent is a multiplier percentage (default 150%).
+   The final --shop-panel-height is card height * percent/100 + meta area. */
+:root {
+  --shop-panel-meta-h: 56px;
+  --shop-panel-height: calc(var(--shop-card-h, 200px) * (var(--shop-panel-height-percent, 150) / 100) + var(--shop-panel-meta-h));
+}
+
+.shop-carousel-wrap {
+  height: var(--shop-panel-height);
+  min-height: var(--shop-panel-height);
+  box-sizing: border-box;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column; /* stack carousel and info vertically */
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
 /* Shop card styles: match CardArc card aspect ratio and visual treatment */
 .shop-card {
-  width: min(380px, 70%);
-  aspect-ratio: 2.75 / 4.75; /* width / height matches CardArc cards */
+  /* Prefer pixel-perfect CardArc card size published by CardArc via computeCardLayout */
+  width: var(--shop-card-w, min(380px, 70%));
+  height: var(--shop-card-h, auto);
+  aspect-ratio: 2.75 / 4.75; /* fallback aspect ratio */
   display: flex;
   flex-direction: column;
   background: var(--panel-bg-shop, linear-gradient(180deg, #fff, #f7f7f7));
@@ -310,14 +324,18 @@
   object-fit: cover;
   display: block;
 }
-.carousel-meta {
-  padding: 0.5rem;
+.item-title { font-weight: 700; }
+
+/* New: separate item info block below the carousel card */
+.shop-item-info {
+  margin-top: 0.5rem;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 8px;
+  justify-content: center;
+  gap: 12px;
 }
-.item-title { font-weight: 700; }
+.shop-item-info .item-title { font-weight: 700; }
+.shop-item-info .shop-link { font-weight: 700; }
 
 /* Make carousel nav buttons slightly overlay the card edges for better UX */
 .carousel-btn.left, .carousel-btn.right {
