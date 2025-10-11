@@ -88,46 +88,113 @@ const SECTIONS = [
 // --- ShopPanel and ShopCarousel components (kept local) ---
 const ShopCarousel = ({ items = [] }) => {
   const [idx, setIdx] = useState(0);
-  useEffect(() => { if (idx >= items.length) setIdx(0); }, [items, idx]);
+  useEffect(() => { if (items && items.length > 0 && idx >= items.length) setIdx(0); }, [items, idx]);
+
   const prev = () => setIdx(i => (i - 1 + items.length) % items.length);
   const next = () => setIdx(i => (i + 1) % items.length);
+
+  // swipe/drag state
+  const touchStartX = useRef(null);
+  const dragging = useRef(false);
+
+  const onTouchStart = (e) => {
+    dragging.current = true;
+    touchStartX.current = (e.touches && e.touches[0] && e.touches[0].clientX) || (e.clientX || 0);
+  };
+  const onTouchMove = (e) => {
+    if (!dragging.current) return;
+    // prevent native scrolling while swiping horizontally
+    try { e.preventDefault(); } catch (e) {}
+  };
+  const onTouchEnd = (e) => {
+    if (!dragging.current) return;
+    const endX = (e.changedTouches && e.changedTouches[0] && e.changedTouches[0].clientX) || (e.clientX || 0);
+    const dx = endX - (touchStartX.current || 0);
+    dragging.current = false;
+    touchStartX.current = null;
+    const THRESH = 40;
+    if (dx > THRESH) prev();
+    else if (dx < -THRESH) next();
+  };
+
   if (!items || items.length === 0) return <div className="shop-empty">No items in this category.</div>;
-  const it = items[idx];
+
+  // helper to compute shortest circular delta in range [-floor(n/2), ceil(n/2)]
+  const computeDelta = (i) => {
+    const n = items.length;
+    let d = i - idx;
+    if (d > n/2) d -= n;
+    if (d <= -n/2) d += n;
+    return d;
+  };
+
   return (
-    <>
+    <div className="shop-carousel-wrap" onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd} onMouseDown={(e)=>{ onTouchStart(e); }} onMouseMove={(e)=>{ if (dragging.current) onTouchMove(e); }} onMouseUp={(e)=>{ onTouchEnd(e); }} onMouseLeave={(e)=>{ dragging.current && onTouchEnd(e); }}>
       <div className="shop-carousel">
         <button className="carousel-btn left" aria-label="Previous item" onClick={prev}>◀</button>
-        <div className="carousel-item">
-          <div className="shop-card">
-            <div className="shop-card-media">
-              <img src={it.image} alt={it.title} />
-            </div>
-          </div>
+        <div className="carousel-track" style={{ position: 'relative', width: '100%', height: '100%' }}>
+          {items.map((it, i) => {
+            const d = computeDelta(i); // -2,-1,0,1,2 etc
+            // hide items that are far away for performance
+            const visible = Math.abs(d) <= 2;
+            const style = {
+              ['--pos']: d,
+            };
+            return (
+              <div
+                className={`carousel-item carousel-item-pos-${d} ${visible ? 'visible' : 'hidden'}`}
+                key={`shop-item-${i}`}
+                style={style}
+                aria-hidden={d !== 0}
+              >
+                <div className="shop-card">
+                  <div className="shop-card-media">
+                    <img src={it.image} alt={it.title} />
+                  </div>
+                </div>
+              </div>
+            );
+          })}
         </div>
         <button className="carousel-btn right" aria-label="Next item" onClick={next}>▶</button>
       </div>
       <div className="shop-item-info" aria-live="polite">
-        <div className="item-title">{it.title}</div>
-        <a className="shop-link" href={it.link} target="_blank" rel="noreferrer">Buy on Shopify</a>
+        <div className="item-title">{items[idx].title}</div>
+        <a className="shop-link" href={items[idx].link} target="_blank" rel="noreferrer">Buy on Shopify</a>
       </div>
-    </>
+    </div>
   );
 };
 
 const ShopPanel = ({ id, cls, title }) => {
+  // Expanded set of test products for each category. These are dummy items used
+  // for local testing and layout checks. Replace with real product data when
+  // wiring to a backend or real storefront.
   const sampleItems = {
     books: [
       { title: 'Grimoire & Guide', image: '/assets/shop/book1.jpg', link: 'https://shop.example.com/book1' },
       { title: 'Pocket Journal', image: '/assets/shop/journal1.jpg', link: 'https://shop.example.com/journal1' },
+      { title: 'Lunar Planner', image: '/assets/shop/book2.jpg', link: 'https://shop.example.com/book2' },
+      { title: 'Herbal Almanac', image: '/assets/shop/book3.jpg', link: 'https://shop.example.com/book3' },
     ],
     shirts: [
       { title: 'Moon Tee', image: '/assets/shop/shirt1.jpg', link: 'https://shop.example.com/shirt1' },
+      { title: 'Sigil Hoodie', image: '/assets/shop/shirt2.jpg', link: 'https://shop.example.com/shirt2' },
+      { title: 'Coven Crop Top', image: '/assets/shop/shirt3.jpg', link: 'https://shop.example.com/shirt3' },
+      { title: 'Vintage Pentagram Tee', image: '/assets/shop/shirt4.jpg', link: 'https://shop.example.com/shirt4' },
     ],
     stickers: [
       { title: 'Sigil Sticker Pack', image: '/assets/shop/sticker1.jpg', link: 'https://shop.example.com/sticker1' },
+      { title: 'Moon Phases Sticker', image: '/assets/shop/sticker2.jpg', link: 'https://shop.example.com/sticker2' },
+      { title: 'Tiny Tarot Icons', image: '/assets/shop/sticker3.jpg', link: 'https://shop.example.com/sticker3' },
+      { title: 'Witchy Labels', image: '/assets/shop/sticker4.jpg', link: 'https://shop.example.com/sticker4' },
+      { title: 'Holographic Sigil', image: '/assets/shop/sticker5.jpg', link: 'https://shop.example.com/sticker5' },
     ],
     crafts: [
       { title: 'Witchy Wreath', image: '/assets/shop/craft1.jpg', link: 'https://shop.example.com/craft1' },
+      { title: 'Handblended Incense', image: '/assets/shop/craft2.jpg', link: 'https://shop.example.com/craft2' },
+      { title: 'Embroidered Altar Cloth', image: '/assets/shop/craft3.jpg', link: 'https://shop.example.com/craft3' },
+      { title: 'Crystal Pouch (set of 3)', image: '/assets/shop/craft4.jpg', link: 'https://shop.example.com/craft4' },
     ],
   };
   const [category, setCategory] = useState('books');
