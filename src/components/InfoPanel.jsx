@@ -96,10 +96,14 @@ const ShopCarousel = ({ items = [] }) => {
     <div className="shop-carousel">
       <button className="carousel-btn left" aria-label="Previous item" onClick={prev}>◀</button>
       <div className="carousel-item">
-        <img src={it.image} alt={it.title} />
-        <div className="carousel-meta">
-          <div className="item-title">{it.title}</div>
-          <a className="shop-link" href={it.link} target="_blank" rel="noreferrer">Buy on Shopify</a>
+        <div className="shop-card">
+          <div className="shop-card-media">
+            <img src={it.image} alt={it.title} />
+          </div>
+          <div className="carousel-meta">
+            <div className="item-title">{it.title}</div>
+            <a className="shop-link" href={it.link} target="_blank" rel="noreferrer">Buy on Shopify</a>
+          </div>
         </div>
       </div>
       <button className="carousel-btn right" aria-label="Next item" onClick={next}>▶</button>

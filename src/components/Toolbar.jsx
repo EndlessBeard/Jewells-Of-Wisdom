@@ -259,6 +259,18 @@ const Toolbar = () => {
       else if (!getComputedStyle(document.documentElement).getPropertyValue('--cardarc-bottom-padding')) document.documentElement.style.setProperty('--cardarc-bottom-padding', '12');
     } catch {}
 
+    // shop card gap + size multiplier persistence
+    try {
+      const sg = localStorage.getItem('jow.layout.shopCardGap');
+      if (sg != null) document.documentElement.style.setProperty('--shop-card-gap', `${Number(sg)}px`);
+      else if (!getComputedStyle(document.documentElement).getPropertyValue('--shop-card-gap')) document.documentElement.style.setProperty('--shop-card-gap', '12px');
+    } catch {}
+    try {
+      const sm = localStorage.getItem('jow.layout.shopCardSizeMultiplier');
+      if (sm != null) document.documentElement.style.setProperty('--shop-card-size-multiplier-percent', String(Number(sm)));
+      else if (!getComputedStyle(document.documentElement).getPropertyValue('--shop-card-size-multiplier-percent')) document.documentElement.style.setProperty('--shop-card-size-multiplier-percent', '100');
+    } catch {}
+
     // Initialize and persist CardArc related CSS vars (gap, radius, per-card tweaks)
     try {
       // toolbar gap
@@ -395,6 +407,59 @@ const Toolbar = () => {
     try { window.dispatchEvent(new CustomEvent('layout:update')); } catch {}
   };
 
+  // Edge padding (percent of viewport width per side) - controls panel & card edge padding
+  const [edgePaddingPercent, setEdgePaddingPercent] = useState(() => {
+    try {
+      const v = localStorage.getItem(LAYOUT_KEYS.edgePaddingPercent);
+      if (v != null) return Number(v);
+      const cs = getComputedStyle(document.documentElement).getPropertyValue('--layout-edge-padding-percent');
+      if (cs) return Number(cs) || 4;
+    } catch {}
+    return 4;
+  });
+  const setEdgePadding = (v) => {
+    const n = Number(v) || 0;
+    setEdgePaddingPercent(n);
+    try { localStorage.setItem(LAYOUT_KEYS.edgePaddingPercent, String(n)); } catch {}
+    try { document.documentElement.style.setProperty('--layout-edge-padding-percent', String(n)); } catch {}
+    try { window.dispatchEvent(new CustomEvent('layout:update')); } catch {}
+  };
+
+  // Shop card controls (Info Panel) - gap (px) and size multiplier (%)
+  const [shopCardGap, setShopCardGap] = useState(() => {
+    try {
+      const v = localStorage.getItem('jow.layout.shopCardGap');
+      if (v != null) return Number(v);
+      const cs = getComputedStyle(document.documentElement).getPropertyValue('--shop-card-gap');
+      if (cs) return Number(cs.replace('px','')) || 12;
+    } catch {}
+    return 12;
+  });
+  const setShopGap = (v) => {
+    const n = Number(v) || 0;
+    setShopCardGap(n);
+    try { localStorage.setItem('jow.layout.shopCardGap', String(n)); } catch {}
+    try { document.documentElement.style.setProperty('--shop-card-gap', `${n}px`); } catch {}
+    try { window.dispatchEvent(new CustomEvent('layout:update')); } catch {}
+  };
+
+  const [shopCardSizeMultiplier, setShopCardSizeMultiplier] = useState(() => {
+    try {
+      const v = localStorage.getItem('jow.layout.shopCardSizeMultiplier');
+      if (v != null) return Number(v);
+      const cs = getComputedStyle(document.documentElement).getPropertyValue('--shop-card-size-multiplier-percent');
+      if (cs) return Number(cs.replace('%','')) || 100;
+    } catch {}
+    return 100;
+  });
+  const setShopSizeMult = (v) => {
+    const n = Number(v) || 100;
+    setShopCardSizeMultiplier(n);
+    try { localStorage.setItem('jow.layout.shopCardSizeMultiplier', String(n)); } catch {}
+    try { document.documentElement.style.setProperty('--shop-card-size-multiplier-percent', `${n}`); } catch {}
+    try { window.dispatchEvent(new CustomEvent('layout:update')); } catch {}
+  };
+
   return (
     <header className="toolbar">
       <div className="toolbar-inner">
@@ -499,6 +564,26 @@ const Toolbar = () => {
                       <div style={{minWidth: '48px', textAlign:'right'}}>{infoBottomPadding}px</div>
                     </label>
                     <div style={{fontSize:'0.8rem',color:'#666'}}>Adjust extra breathing room below the cards before the Info Panel starts.</div>
+                    <hr />
+                    <div style={{fontWeight:700}}>Edge padding</div>
+                    <label style={{display:'flex',alignItems:'center',gap:'0.5rem'}}>
+                      <div style={{flex:1}}>Panel & card padding</div>
+                      <input type="range" min="0" max="10" value={edgePaddingPercent} onChange={(e) => setEdgePadding(e.target.value)} />
+                      <div style={{minWidth: '48px', textAlign:'right'}}>{edgePaddingPercent}%</div>
+                    </label>
+                    <div style={{fontSize:'0.8rem',color:'#666'}}>Controls padding at the edges of panels and inside card frames (percent of viewport width).</div>
+                    <hr />
+                    <div style={{fontWeight:700}}>Shop card controls</div>
+                    <label style={{display:'flex',alignItems:'center',gap:'0.5rem'}}>
+                      <div style={{flex:1}}>Card gap</div>
+                      <input type="range" min="0" max="48" value={shopCardGap} onChange={(e) => setShopGap(e.target.value)} />
+                      <div style={{minWidth: '48px', textAlign:'right'}}>{shopCardGap}px</div>
+                    </label>
+                    <label style={{display:'flex',alignItems:'center',gap:'0.5rem'}}>
+                      <div style={{flex:1}}>Card size</div>
+                      <input type="range" min="50" max="200" value={shopCardSizeMultiplier} onChange={(e) => setShopSizeMult(e.target.value)} />
+                      <div style={{minWidth: '48px', textAlign:'right'}}>{shopCardSizeMultiplier}%</div>
+                    </label>
                   </div>
                 </div>
               </div>

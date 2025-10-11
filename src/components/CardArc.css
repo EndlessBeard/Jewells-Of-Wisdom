@@ -42,7 +42,7 @@
   perspective: 800px;
   pointer-events: auto;
   cursor: pointer;
-  transition: z-index 0.2s, opacity 220ms ease;
+  transition: z-index 0.2s; /* opacity transitions removed */
 }
 .card-arc-inner {
   width: 100%;
@@ -79,6 +79,14 @@
   background: #fff;
   color: #222;
   transform: rotateY(180deg);
+}
+
+/* Respect global edge padding for card internal spacing */
+:root .card-arc-front, :root .card-arc-back {
+  /* compute an approximate pixel padding from percent of viewport width */
+  --card-edge-padding: calc(var(--layout-edge-padding-percent, 4) * 0.5vw);
+  padding: var(--card-edge-padding);
+  box-sizing: border-box;
 }
 
 /* temporary backside styling */

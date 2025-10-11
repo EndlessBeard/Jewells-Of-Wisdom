@@ -55,7 +55,7 @@ function Card({ label, content, style, flipped, onClick, onMouseEnter, onMouseLe
   );
 }
 
-const CardArc = ({ onCardClick, fadeStart = 300, fadeEnd = 50 }) => {
+const CardArc = ({ onCardClick }) => {
   const [hovered, setHovered] = useState(null);
   const [flipped, setFlipped] = useState(Array(CARD_DATA.length).fill(false));
 
@@ -106,7 +106,8 @@ const CardArc = ({ onCardClick, fadeStart = 300, fadeEnd = 50 }) => {
   };
   // Watermark target values (tweakable)
   const BASE_LOGO_WM_SCALE = 4; // final watermark scale (times original)
-  const BASE_LOGO_WM_OPACITY = 0.15; // final watermark opacity
+  // watermark opacity constant retained for reference but not used
+  const BASE_LOGO_WM_OPACITY = 0.15; // final watermark opacity (unused)
   const BASE_LOGO_START = 200; // px (at scale=1) where logo transformation starts
   const BASE_LOGO_END = -240;  // px (at scale=1) where logo reaches watermark state
 
@@ -114,7 +115,6 @@ const CardArc = ({ onCardClick, fadeStart = 300, fadeEnd = 50 }) => {
   const logoRef = useRef(null);
   const arcRef = useRef(null);
   const [wrapperSize, setWrapperSize] = useState({ width: WRAPPER_WIDTH, height: WRAPPER_HEIGHT });
-  const [opacities, setOpacities] = useState(Array(CARD_DATA.length).fill(1));
   const [logoVisual, setLogoVisual] = useState({ opacity: 1, scale: 1, translateY: 0 });
 
   useEffect(() => {
@@ -168,72 +168,7 @@ const CardArc = ({ onCardClick, fadeStart = 300, fadeEnd = 50 }) => {
   // Logo measurement and info-panel overlap management removed.
 
   // Fade / scroll-driven visual calculations
-  useEffect(() => {
-    let rafId = null;
-
-    const computeOpacities = () => {
-      const el = wrapperRef.current;
-      const metrics = (el && el.__cardMetrics) || {};
-      const wrapperW = metrics.wrapperW || wrapperSize.width || WRAPPER_WIDTH;
-      const wrapperH = metrics.wrapperH || wrapperSize.height || WRAPPER_HEIGHT;
-      const cardW = metrics.cardW || BASE_CARD_WIDTH;
-      const cardH = metrics.cardH || BASE_CARD_HEIGHT;
-      const rX = metrics.radiusX || BASE_RADIUS_X;
-      const rY = metrics.radiusY || BASE_RADIUS_Y;
-      const yOffs = metrics.yOffsets || BASE_Y_OFFSETS;
-      const scale = metrics.scale || (metrics.cardW ? metrics.cardW / BASE_CARD_WIDTH : 1);
-
-      const rect = el ? el.getBoundingClientRect() : { top: 0, left: 0 };
-
-      const fadeStartPx = (fadeStart || 320) * scale; // px from top of viewport
-      const fadeEndPx = (fadeEnd || 80) * scale;
-
-      const newOpacities = CARD_DATA.map((_, i) => {
-        const total = CARD_DATA.length - 1;
-        const angle = Math.PI - (i * Math.PI) / total;
-        const x = rX * Math.cos(angle);
-        const y = -rY * Math.sin(angle) + yOffs[i];
-        const leftFromCenter = x + wrapperW / 2 - cardW / 2;
-        const topFromCenter = y + wrapperH / 2 - cardH / 2;
-
-        // Use the bottom-center of the card as the anchor for fading
-        const cardBottomPageY = rect.top + topFromCenter + cardH; // card bottom relative to viewport top
-
-        // opacity calculation: fully visible when card bottom >= fadeStartPx
-        // fully transparent when card bottom <= fadeEndPx
-        if (cardBottomPageY >= fadeStartPx) return 1;
-        if (cardBottomPageY <= fadeEndPx) return 0;
-        // interpolate between end and start
-        const t = (cardBottomPageY - fadeEndPx) / (fadeStartPx - fadeEndPx);
-        return Math.max(0, Math.min(1, t));
-      });
-
-      setOpacities(newOpacities);
-
-
-  // Logo watermark/zoom/fade behavior intentionally disabled.
-  // Previously we calculated a scroll-driven transform and opacity to morph the
-  // logo into a watermark; that effect is bypassed and the logo remains static.
-  setLogoVisual({ opacity: 1, scale: 1, translateY: 0 });
-
-      rafId = null;
-    };
-
-    const onScroll = () => {
-      if (rafId == null) rafId = requestAnimationFrame(computeOpacities);
-    };
-
-    // initial compute
-    computeOpacities();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', onScroll);
-
-    return () => {
-      if (rafId) cancelAnimationFrame(rafId);
-      window.removeEventListener('scroll', onScroll);
-      window.removeEventListener('resize', onScroll);
-    };
-  }, [wrapperSize, fadeStart, fadeEnd]);
+  // Opacity/fade-on-scroll removed — cards are fully opaque at all times.
 
   // Whenever wrapperSize changes, update CSS variables for responsive scaling
   useEffect(() => {
@@ -433,11 +368,10 @@ const CardArc = ({ onCardClick, fadeStart = 300, fadeEnd = 50 }) => {
           const logoStyleInner = {
             width: `${logoW}px`,
             height: `${logoH}px`,
-            opacity: logoVisual.opacity,
             transform,
             transformOrigin: 'center center',
             pointerEvents: 'none',
-            transition: 'transform 220ms linear, opacity 220ms linear',
+            transition: 'transform 220ms linear',
           };
 
           return (
@@ -519,7 +453,7 @@ const CardArc = ({ onCardClick, fadeStart = 300, fadeEnd = 50 }) => {
                 width: `${cardW}px`,
                 height: `${cardH}px`,
                 zIndex: 10 + (hovered === i ? 1 : 0),
-                opacity: opacities[i] ?? 1,
+                opacity: 1,
                 // pass front/back image urls for the card faces
                 '--front-img': card.front || '',
                 '--back-img': card.back || '',

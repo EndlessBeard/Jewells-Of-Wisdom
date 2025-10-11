@@ -1,7 +1,9 @@
 #root {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 1rem;
+  /* keep vertical padding, but use viewport-edge padding for left/right (percent of vw)
+     controlled by --layout-edge-padding-percent */
+  padding: 1rem calc(var(--layout-edge-padding-percent, 1) * 1vw);
   text-align: center;
 }
 

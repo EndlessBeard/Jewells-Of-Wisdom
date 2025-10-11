@@ -23,6 +23,10 @@
 
   position: static;
   z-index: auto;
+  /* internal container uses small rem padding; global viewport edge padding
+    is applied to the outer #root element via App.css */
+  padding-left: 0.25rem;
+  padding-right: 0.25rem;
 
 }
 .info-panel-inner {
@@ -54,6 +58,11 @@
   background: var(--panel-bg, linear-gradient(180deg, #fff, #fbfbfb));
   border-radius: 12px;
   box-shadow: 0 6px 24px rgba(0,0,0,0.06);
+  /* panels include modest internal padding; viewport edge padding is global */
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
 }
 
 /* Keep the stage in normal flow and give panels a max-height so they don't push other elements
@@ -193,24 +202,25 @@
 /* Shop carousels */
 /* Shop removed — placeholder styling for the Store panel */
 .panel#shop {
-  /* neutral shop panel layout */
+  /* neutral shop panel layout 
   max-width: none;
   width: auto;
   margin: 0;
   padding: 0;
-  box-sizing: border-box;
+  box-sizing: border-box;*/
 }
 
 /* Per-category button backgrounds: allow toolbar to write --panel-bg-shop-cat-<name> vars */
 
 /* Shop categories container: 2x2 grid with small gaps and optional border controlled via --panel-bg-shop-border */
 .shop-categories {
-  display: block;
-  gap: 0;
-  padding: 0;
+  display: flex;
+  gap: var(--shop-card-gap, 12px);
+  padding: 0.5rem 0;
   border-radius: 0;
   border: none;
-  background-clip: unset;
+  justify-content: center;
+  align-items: center;
 }
 
 .shop-categories button[data-cat="books"] { background: var(--panel-bg-shop-cat-books, linear-gradient(180deg,#fff,#f7f7f7)); }
@@ -222,6 +232,20 @@
   border: var(--panel-bg-shop-outline-width, 1px) solid var(--panel-bg-shop-btn-outline, rgba(0,0,0,0.06));
   /* reinforce text color here as well for specificity */
   color: var(--panel-bg-shop-btn-color, #111);
+  /* use card aspect ratio from CardArc (width:height == 2.75:4.75) */
+  aspect-ratio: 2.75 / 4.75;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  min-width: 72px;
+  width: clamp(72px, calc((100% - (var(--shop-card-gap,12px) * 3)) / 4), 220px);
+  /* remove large padding; control size via width + aspect-ratio */
+  /* modest internal padding; global viewport padding applied at #root */
+  padding: 0.5rem;
+  text-align: center;
+  box-sizing: border-box;
+  font-size: calc(0.95rem * (var(--shop-card-size-multiplier-percent, 100) / 100));
 }
 
 /* Carousel directional button colors */
@@ -256,5 +280,53 @@
 .shop-carousel {
   padding: 0;
   box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
 }
+
+/* Shop card styles: match CardArc card aspect ratio and visual treatment */
+.shop-card {
+  width: min(380px, 70%);
+  aspect-ratio: 2.75 / 4.75; /* width / height matches CardArc cards */
+  display: flex;
+  flex-direction: column;
+  background: var(--panel-bg-shop, linear-gradient(180deg, #fff, #f7f7f7));
+  border-radius: 16px;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.06);
+  overflow: hidden;
+  box-sizing: border-box;
+}
+.shop-card-media {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: block;
+  background: #f3f3f3;
+}
+.shop-card-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.carousel-meta {
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.item-title { font-weight: 700; }
+
+/* Make carousel nav buttons slightly overlay the card edges for better UX */
+.carousel-btn.left, .carousel-btn.right {
+  background: transparent;
+  border: none;
+  font-size: 1.25rem;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+.carousel-btn.left { margin-right: -8px; }
+.carousel-btn.right { margin-left: -8px; }
 
