@@ -1,6 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import './InfoPanel.css';
 import { computeCardLayout } from '../utils/computeLayout';
+import Shop_Books from '../assets/Shop_Books.png';
+import Shop_Shirts from '../assets/Shop_Shirts.png';
+import Shop_Stickers from '../assets/Shop_Stickers.png';
+import Shop_Crafts from '../assets/Shop_Crafts.png';
 
 // Sections derived from the outline (mapped to Card labels)
 const SECTIONS = [
@@ -213,10 +217,10 @@ const ShopPanel = ({ id, cls, title }) => {
     <article id={id} className={`panel ${cls}`} tabIndex={-1}>
       <h2 tabIndex={-1}>The Jewell Shop</h2>
       <div className="shop-categories">
-        <button data-cat="shirts" className={`cat-btn ${category === 'shirts' ? 'active' : ''}`} onClick={() => setCategory('shirts')}>T-Shirts</button>
-        <button data-cat="books" className={`cat-btn ${category === 'books' ? 'active' : ''}`} onClick={() => setCategory('books')}>Books / Journals</button>
-        <button data-cat="stickers" className={`cat-btn ${category === 'stickers' ? 'active' : ''}`} onClick={() => setCategory('stickers')}>Stickers</button>
-        <button data-cat="crafts" className={`cat-btn ${category === 'crafts' ? 'active' : ''}`} onClick={() => setCategory('crafts')}>Crafts For Witches</button>
+        <button aria-label="T-Shirts" data-cat="shirts" className={`cat-btn ${category === 'shirts' ? 'active' : ''}`} onClick={() => setCategory('shirts')}></button>
+        <button aria-label="Books / Journals" data-cat="books" className={`cat-btn ${category === 'books' ? 'active' : ''}`} onClick={() => setCategory('books')}></button>
+        <button aria-label="Stickers" data-cat="stickers" className={`cat-btn ${category === 'stickers' ? 'active' : ''}`} onClick={() => setCategory('stickers')}></button>
+        <button aria-label="Crafts For Witches" data-cat="crafts" className={`cat-btn ${category === 'crafts' ? 'active' : ''}`} onClick={() => setCategory('crafts')}></button>
       </div>
       <ShopCarousel items={itemsFor(category)} />
     </article>
@@ -229,6 +233,53 @@ const InfoPanel = ({ selectedCard = null }) => {
   const [animating, setAnimating] = useState(false);
   const [direction, setDirection] = useState('left');
   const wrapperRef = useRef(null);
+
+  // Set CSS custom properties for category background images and handle image loading
+  useEffect(() => {
+    const root = document.documentElement;
+    
+    // Test image loading and set classes accordingly
+    const testImageLoad = (imageSrc, category) => {
+      const img = new Image();
+      img.onload = () => {
+        // Image loaded successfully, hide text
+        const button = document.querySelector(`button[data-cat="${category}"]`);
+        if (button) {
+          button.classList.add('image-loaded');
+          button.classList.remove('image-failed');
+        }
+      };
+      img.onerror = () => {
+        // Image failed to load, show text
+        const button = document.querySelector(`button[data-cat="${category}"]`);
+        if (button) {
+          button.classList.add('image-failed');
+          button.classList.remove('image-loaded');
+        }
+      };
+      img.src = imageSrc;
+    };
+
+    // Set CSS properties and test image loading
+    root.style.setProperty('--shop-cat-books-bg-image', `url(${Shop_Books})`);
+    root.style.setProperty('--shop-cat-shirts-bg-image', `url(${Shop_Shirts})`);
+    root.style.setProperty('--shop-cat-stickers-bg-image', `url(${Shop_Stickers})`);
+    root.style.setProperty('--shop-cat-crafts-bg-image', `url(${Shop_Crafts})`);
+
+    testImageLoad(Shop_Books, 'books');
+    testImageLoad(Shop_Shirts, 'shirts');
+    testImageLoad(Shop_Stickers, 'stickers');
+    testImageLoad(Shop_Crafts, 'crafts');
+  }, []);
+
+  // Set CSS custom properties for category background images early
+  useEffect(() => {
+    const root = document.documentElement;
+    root.style.setProperty('--shop-cat-books-bg-image', `url(${Shop_Books})`);
+    root.style.setProperty('--shop-cat-shirts-bg-image', `url(${Shop_Shirts})`);
+    root.style.setProperty('--shop-cat-stickers-bg-image', `url(${Shop_Stickers})`);
+    root.style.setProperty('--shop-cat-crafts-bg-image', `url(${Shop_Crafts})`);
+  }, []);
 
   // Publish shop carousel card pixel size so the carousel card matches CardArc cards.
   useEffect(() => {

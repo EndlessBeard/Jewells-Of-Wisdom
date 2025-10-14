@@ -215,10 +215,53 @@
   align-items: center;
 }
 
-.shop-categories button[data-cat="books"] { background: var(--panel-bg-shop-cat-books, linear-gradient(180deg,#fff,#f7f7f7)); }
-.shop-categories button[data-cat="shirts"] { background: var(--panel-bg-shop-cat-shirts, linear-gradient(180deg,#fff,#f7f7f7)); }
-.shop-categories button[data-cat="stickers"] { background: var(--panel-bg-shop-cat-stickers, linear-gradient(180deg,#fff,#f7f7f7)); }
-.shop-categories button[data-cat="crafts"] { background: var(--panel-bg-shop-cat-crafts, linear-gradient(180deg,#fff,#f7f7f7)); }
+/* Apply shop card size multiplier to category buttons so the toolbar slider
+   visibly scales the button artwork even when text is hidden. Uses the same
+   CSS var the toolbar controls: --shop-card-size-multiplier-percent. */
+.shop-categories {
+  --shop-mult: calc((var(--shop-card-size-multiplier-percent, 100) / 100));
+}
+
+.shop-categories button[data-cat="books"] { 
+  background: var(--panel-bg-shop-cat-books, linear-gradient(180deg,#fff,#f7f7f7));
+  background-image: var(--shop-cat-books-bg-image);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+.shop-categories button[data-cat="shirts"] { 
+  background: var(--panel-bg-shop-cat-shirts, linear-gradient(180deg,#fff,#f7f7f7));
+  background-image: var(--shop-cat-shirts-bg-image);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+.shop-categories button[data-cat="stickers"] { 
+  background: var(--panel-bg-shop-cat-stickers, linear-gradient(180deg,#fff,#f7f7f7));
+  background-image: var(--shop-cat-stickers-bg-image);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+.shop-categories button[data-cat="crafts"] { 
+  background: var(--panel-bg-shop-cat-crafts, linear-gradient(180deg,#fff,#f7f7f7));
+  background-image: var(--shop-cat-crafts-bg-image);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* Hide text when image loads successfully */
+.shop-categories button.cat-btn.image-loaded {
+  color: transparent;
+  text-shadow: none;
+}
+
+/* Show text when image fails to load */
+.shop-categories button.cat-btn.image-failed {
+  color: var(--panel-bg-shop-btn-color, #111);
+  background-image: none; /* Remove failed image */
+}
 /* give each category button an outline that can be controlled globally */
 .shop-categories button.cat-btn {
   border: var(--panel-bg-shop-outline-width, 1px) solid var(--panel-bg-shop-btn-outline, rgba(0,0,0,0.06));
@@ -238,6 +281,11 @@
   text-align: center;
   box-sizing: border-box;
   font-size: calc(0.95rem * (var(--shop-card-size-multiplier-percent, 100) / 100));
+  position: relative; /* needed for pseudo-elements */
+  overflow: hidden; /* ensure pseudo-elements don't overflow */
+  transform-origin: center;
+  transform: scale(var(--shop-mult, 1));
+  transition: transform 220ms ease;
 }
 
 /* Carousel directional button colors */
