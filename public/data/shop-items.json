@@ -1,0 +1,48 @@
+{
+  "books": [
+    { "title": "Grimoire & Guide", "image": "/assets/shop/book1.jpg", "link": "https://shop.example.com/book1" },
+    { "title": "Pocket Journal", "image": "/assets/shop/journal1.jpg", "link": "https://shop.example.com/journal1" },
+    { "title": "Lunar Planner", "image": "/assets/shop/book2.jpg", "link": "https://shop.example.com/book2" },
+    { "title": "Herbal Almanac", "image": "/assets/shop/book3.jpg", "link": "https://shop.example.com/book3" },
+    { "title": "The Beginner's Book of Benign Hexes", "image": "/assets/shop/book4.jpg", "link": "https://shop.example.com/book4" },
+    { "title": "Tea & Tarot: Brew Your Future", "image": "/assets/shop/book5.jpg", "link": "https://shop.example.com/book5" },
+    { "title": "Pocket Grimoire: Sticky Notes Edition", "image": "/assets/shop/book6.jpg", "link": "https://shop.example.com/book6" },
+    { "title": "Night Market Recipes", "image": "/assets/shop/book7.jpg", "link": "https://shop.example.com/book7" },
+    { "title": "The Lost Index of Charming Curses", "image": "/assets/shop/book8.jpg", "link": "https://shop.example.com/book8" }
+  ],
+  "shirts": [
+    { "title": "Moon Tee", "image": "/assets/shop/shirt1.jpg", "link": "https://shop.example.com/shirt1" },
+    { "title": "Sigil Hoodie", "image": "/assets/shop/shirt2.jpg", "link": "https://shop.example.com/shirt2" },
+    { "title": "Coven Crop Top", "image": "/assets/shop/shirt3.jpg", "link": "https://shop.example.com/shirt3" },
+    { "title": "Vintage Pentagram Tee", "image": "/assets/shop/shirt4.jpg", "link": "https://shop.example.com/shirt4" },
+    { "title": "Tea Spell Tee", "image": "/assets/shop/shirt5.jpg", "link": "https://shop.example.com/shirt5" },
+    { "title": "Blessed & Caffeinated", "image": "/assets/shop/shirt6.jpg", "link": "https://shop.example.com/shirt6" },
+    { "title": "I Read The Stars", "image": "/assets/shop/shirt7.jpg", "link": "https://shop.example.com/shirt7" },
+    { "title": "Witchcraft Gym Club", "image": "/assets/shop/shirt8.jpg", "link": "https://shop.example.com/shirt8" },
+    { "title": "Hexcellent Adventures", "image": "/assets/shop/shirt9.jpg", "link": "https://shop.example.com/shirt9" }
+  ],
+  "stickers": [
+    { "title": "Sigil Sticker Pack", "image": "/assets/shop/sticker1.jpg", "link": "https://shop.example.com/sticker1" },
+    { "title": "Moon Phases Sticker", "image": "/assets/shop/sticker2.jpg", "link": "https://shop.example.com/sticker2" },
+    { "title": "Tiny Tarot Icons", "image": "/assets/shop/sticker3.jpg", "link": "https://shop.example.com/sticker3" },
+    { "title": "Witchy Labels", "image": "/assets/shop/sticker4.jpg", "link": "https://shop.example.com/sticker4" },
+    { "title": "Holographic Sigil", "image": "/assets/shop/sticker5.jpg", "link": "https://shop.example.com/sticker5" }
+    ,
+    { "title": "Coffee & Coven Sticker", "image": "/assets/shop/sticker6.jpg", "link": "https://shop.example.com/sticker6" },
+    { "title": "Micro Moon Sticker", "image": "/assets/shop/sticker7.jpg", "link": "https://shop.example.com/sticker7" },
+    { "title": "Ritual Checklist", "image": "/assets/shop/sticker8.jpg", "link": "https://shop.example.com/sticker8" },
+    { "title": "Tiny Familiar", "image": "/assets/shop/sticker9.jpg", "link": "https://shop.example.com/sticker9" },
+    { "title": "Pocket Potion Label", "image": "/assets/shop/sticker10.jpg", "link": "https://shop.example.com/sticker10" }
+  ],
+  "crafts": [
+    { "title": "Witchy Wreath", "image": "/assets/shop/craft1.jpg", "link": "https://shop.example.com/craft1" },
+    { "title": "Handblended Incense", "image": "/assets/shop/craft2.jpg", "link": "https://shop.example.com/craft2" },
+    { "title": "Embroidered Altar Cloth", "image": "/assets/shop/craft3.jpg", "link": "https://shop.example.com/craft3" },
+    { "title": "Crystal Pouch (set of 3)", "image": "/assets/shop/craft4.jpg", "link": "https://shop.example.com/craft4" },
+    { "title": "Mini Moon Mobiles", "image": "/assets/shop/craft5.jpg", "link": "https://shop.example.com/craft5" },
+    { "title": "Hand-poured Nightlight Candle", "image": "/assets/shop/craft6.jpg", "link": "https://shop.example.com/craft6" },
+    { "title": "Pressed Moonflower Bundle", "image": "/assets/shop/craft7.jpg", "link": "https://shop.example.com/craft7" },
+    { "title": "Tiny Spell Jar Kit", "image": "/assets/shop/craft8.jpg", "link": "https://shop.example.com/craft8" },
+    { "title": "Oracle Cloth Patches", "image": "/assets/shop/craft9.jpg", "link": "https://shop.example.com/craft9" }
+  ]
+}

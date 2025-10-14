@@ -167,37 +167,48 @@ const ShopCarousel = ({ items = [] }) => {
 };
 
 const ShopPanel = ({ id, cls, title }) => {
-  // Expanded set of test products for each category. These are dummy items used
-  // for local testing and layout checks. Replace with real product data when
-  // wiring to a backend or real storefront.
-  const sampleItems = {
+  // sample fallback used if the JSON fetch fails or isn't available.
+  const FALLBACK_ITEMS = {
     books: [
       { title: 'Grimoire & Guide', image: '/assets/shop/book1.jpg', link: 'https://shop.example.com/book1' },
       { title: 'Pocket Journal', image: '/assets/shop/journal1.jpg', link: 'https://shop.example.com/journal1' },
-      { title: 'Lunar Planner', image: '/assets/shop/book2.jpg', link: 'https://shop.example.com/book2' },
-      { title: 'Herbal Almanac', image: '/assets/shop/book3.jpg', link: 'https://shop.example.com/book3' },
     ],
     shirts: [
       { title: 'Moon Tee', image: '/assets/shop/shirt1.jpg', link: 'https://shop.example.com/shirt1' },
-      { title: 'Sigil Hoodie', image: '/assets/shop/shirt2.jpg', link: 'https://shop.example.com/shirt2' },
-      { title: 'Coven Crop Top', image: '/assets/shop/shirt3.jpg', link: 'https://shop.example.com/shirt3' },
-      { title: 'Vintage Pentagram Tee', image: '/assets/shop/shirt4.jpg', link: 'https://shop.example.com/shirt4' },
     ],
     stickers: [
       { title: 'Sigil Sticker Pack', image: '/assets/shop/sticker1.jpg', link: 'https://shop.example.com/sticker1' },
-      { title: 'Moon Phases Sticker', image: '/assets/shop/sticker2.jpg', link: 'https://shop.example.com/sticker2' },
-      { title: 'Tiny Tarot Icons', image: '/assets/shop/sticker3.jpg', link: 'https://shop.example.com/sticker3' },
-      { title: 'Witchy Labels', image: '/assets/shop/sticker4.jpg', link: 'https://shop.example.com/sticker4' },
-      { title: 'Holographic Sigil', image: '/assets/shop/sticker5.jpg', link: 'https://shop.example.com/sticker5' },
     ],
     crafts: [
       { title: 'Witchy Wreath', image: '/assets/shop/craft1.jpg', link: 'https://shop.example.com/craft1' },
-      { title: 'Handblended Incense', image: '/assets/shop/craft2.jpg', link: 'https://shop.example.com/craft2' },
-      { title: 'Embroidered Altar Cloth', image: '/assets/shop/craft3.jpg', link: 'https://shop.example.com/craft3' },
-      { title: 'Crystal Pouch (set of 3)', image: '/assets/shop/craft4.jpg', link: 'https://shop.example.com/craft4' },
     ],
   };
+  const [remoteItems, setRemoteItems] = useState(null);
+
+  // Attempt to load /data/shop-items.json from public. Falls back to FALLBACK_ITEMS.
+  useEffect(() => {
+    let canceled = false;
+    const load = async () => {
+      try {
+        const res = await fetch('/data/shop-items.json', { cache: 'no-store' });
+        if (!res.ok) throw new Error('not ok');
+        const json = await res.json();
+        if (!canceled) setRemoteItems(json);
+      } catch (e) {
+        // ignore and leave remoteItems null to use fallback
+      }
+    };
+    load();
+    return () => { canceled = true; };
+  }, []);
   const [category, setCategory] = useState('books');
+  const itemsFor = (cat) => {
+    try {
+      if (remoteItems && typeof remoteItems === 'object' && remoteItems[cat]) return remoteItems[cat];
+    } catch (e) {}
+    return FALLBACK_ITEMS[cat] || [];
+  };
+
   return (
     <article id={id} className={`panel ${cls}`} tabIndex={-1}>
       <h2 tabIndex={-1}>The Jewell Shop</h2>
@@ -207,9 +218,7 @@ const ShopPanel = ({ id, cls, title }) => {
         <button data-cat="stickers" className={`cat-btn ${category === 'stickers' ? 'active' : ''}`} onClick={() => setCategory('stickers')}>Stickers</button>
         <button data-cat="crafts" className={`cat-btn ${category === 'crafts' ? 'active' : ''}`} onClick={() => setCategory('crafts')}>Crafts For Witches</button>
       </div>
-      <div className="shop-carousel-wrap">
-        <ShopCarousel items={sampleItems[category] || []} />
-      </div>
+      <ShopCarousel items={itemsFor(category)} />
     </article>
   );
 };

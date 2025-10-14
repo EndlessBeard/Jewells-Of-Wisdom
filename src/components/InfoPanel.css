@@ -300,11 +300,11 @@
 .carousel-item.hidden { display: none; }
 
 /* positioning based on --pos (-2 leftmost ... 0 center ... 2 rightmost) */
-.carousel-item-pos--2 { transform: translateX(-220%) translateY(-50%) scale(0.7); opacity: 0; z-index: 10; filter: blur(2px); }
-.carousel-item-pos--1 { transform: translateX(-110%) translateY(-50%) scale(0.9); opacity: 0.6; z-index: 20; filter: saturate(0.9); }
-.carousel-item-pos-0  { transform: translateX(-50%) translateY(-50%) scale(1); opacity: 1; z-index: 30; filter: none; }
-.carousel-item-pos-1  { transform: translateX(10%) translateY(-50%) scale(0.9); opacity: 0.6; z-index: 20; filter: saturate(0.9); }
-.carousel-item-pos-2  { transform: translateX(120%) translateY(-50%) scale(0.7); opacity: 0; z-index: 10; filter: blur(2px); }
+.carousel-item-pos--2 { transform: translateX(-250%) translateY(-50%) scale(0.75); opacity: 0.35; z-index: 10; filter: blur(1px) saturate(0.9); }
+.carousel-item-pos--1 { transform: translateX(-150%) translateY(-50%) scale(0.92); opacity: 1; z-index: 20; filter: none; }
+.carousel-item-pos-0  { transform: translateX(-50%) translateY(-50%) scale(1.06); opacity: 1; z-index: 30; filter: none; }
+.carousel-item-pos-1  { transform: translateX(50%) translateY(-50%) scale(0.92); opacity: 1; z-index: 20; filter: none; }
+.carousel-item-pos-2  { transform: translateX(150%) translateY(-50%) scale(0.75); opacity: 0.35; z-index: 10; filter: blur(1px) saturate(0.9); }
 
 /* Ensure shop-card fills the carousel-item box */
 .carousel-item .shop-card { width: var(--shop-card-w, 320px); height: var(--shop-card-h, auto); }
@@ -360,7 +360,7 @@
 /* New: separate item info block below the carousel card */
 .shop-item-info {
   margin-top: 4.5rem;
-  display: flex;
+  
   align-items: center;
   justify-content: center;
   gap: 12px;
