@@ -206,6 +206,68 @@ const ShopPanel = ({ id, cls, title }) => {
     return () => { canceled = true; };
   }, []);
   const [category, setCategory] = useState('books');
+  // --- Persisted shop controls: keep keys in sync with Toolbar.jsx (jow.layout.*)
+  const [shopCardGap, setShopCardGap] = useState(() => {
+    try {
+      const v = localStorage.getItem('jow.layout.shopCardGap');
+      if (v != null) return Number(v);
+      const cs = getComputedStyle(document.documentElement).getPropertyValue('--shop-card-gap');
+      if (cs) return Number(cs.replace('px','')) || 12;
+    } catch (e) {}
+    return 12;
+  });
+
+  const [shopCardSizeMultiplier, setShopCardSizeMultiplier] = useState(() => {
+    try {
+      const v = localStorage.getItem('jow.layout.shopCardSizeMultiplier');
+      if (v != null) return Number(v);
+      const cs = getComputedStyle(document.documentElement).getPropertyValue('--shop-card-size-multiplier-percent');
+      if (cs) return Number(cs) || 100;
+    } catch (e) {}
+    return 100;
+  });
+
+  const [shopPanelHeightPercent, setShopPanelHeightPercent] = useState(() => {
+    try {
+      const v = localStorage.getItem('jow.layout.shopPanelHeightPercent');
+      if (v != null) return Number(v);
+      const cs = getComputedStyle(document.documentElement).getPropertyValue('--shop-panel-height-percent');
+      if (cs) return Number(cs) || 150;
+    } catch (e) {}
+    return 150;
+  });
+
+  // Apply persisted values to CSS vars on mount so the rendered shop matches saved preferences
+  useEffect(() => {
+    try { document.documentElement.style.setProperty('--shop-card-gap', `${Number(shopCardGap)}px`); } catch {}
+    try { document.documentElement.style.setProperty('--shop-card-size-multiplier-percent', String(Number(shopCardSizeMultiplier))); } catch {}
+    try { document.documentElement.style.setProperty('--shop-panel-height-percent', String(Number(shopPanelHeightPercent))); } catch {}
+    try { window.dispatchEvent(new CustomEvent('layout:update')); } catch {}
+  }, []);
+
+  const setShopGap = (v) => {
+    const n = Number(v) || 0;
+    setShopCardGap(n);
+    try { localStorage.setItem('jow.layout.shopCardGap', String(n)); } catch {}
+    try { document.documentElement.style.setProperty('--shop-card-gap', `${n}px`); } catch {}
+    try { window.dispatchEvent(new CustomEvent('layout:update')); } catch {}
+  };
+
+  const setShopSizeMult = (v) => {
+    const n = Number(v) || 100;
+    setShopCardSizeMultiplier(n);
+    try { localStorage.setItem('jow.layout.shopCardSizeMultiplier', String(n)); } catch {}
+    try { document.documentElement.style.setProperty('--shop-card-size-multiplier-percent', String(n)); } catch {}
+    try { window.dispatchEvent(new CustomEvent('layout:update')); } catch {}
+  };
+
+  const setShopPanelHeight = (v) => {
+    const n = Number(v) || 0;
+    setShopPanelHeightPercent(n);
+    try { localStorage.setItem('jow.layout.shopPanelHeightPercent', String(n)); } catch {}
+    try { document.documentElement.style.setProperty('--shop-panel-height-percent', String(n)); } catch {}
+    try { window.dispatchEvent(new CustomEvent('layout:update')); } catch {}
+  };
   const itemsFor = (cat) => {
     try {
       if (remoteItems && typeof remoteItems === 'object' && remoteItems[cat]) return remoteItems[cat];

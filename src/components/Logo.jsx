@@ -1,6 +1,9 @@
 import React from 'react';
 import './Logo.css';
-import logoImg from '../assets/logo.png';
+// prefer the new provided logo; fall back to the original if present
+import logoNew from '../assets/logo-new.png';
+import logoOld from '../assets/logo.png';
+const logoImg = logoNew || logoOld;
 
 // Forward ref so parent components can measure the rendered logo element
 const Logo = React.forwardRef(({ label = 'JW', style = {}, className = '' }, ref) => {
